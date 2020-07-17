@@ -1,0 +1,54 @@
+{
+  "name": "elite-navigator",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.0",
+    "@testing-library/react": "^10.4.5",
+    "@testing-library/user-event": "^12.0.11",
+    "axios": "^0.19.2",
+    "axios-cache-adapter": "^2.5.0",
+    "bootbox": "^5.4.0",
+    "bootstrap": "^4.5.0",
+    "bootswatch": "^4.5.0",
+    "change-case": "^4.1.1",
+    "classnames": "^2.2.6",
+    "customize-cra": "^1.0.0",
+    "customize-cra-react-refresh": "^1.1.0",
+    "gh-pages": "^3.1.0",
+    "node-sass": "^4.14.1",
+    "react-app-rewired": "^2.1.6",
+    "react-beautiful-dnd": "^13.0.0",
+    "react-bootstrap": "^1.2.1",
+    "react-icons": "^3.10.0",
+    "socket.io-client": "^2.3.0",
+    "react-swipeable": "^5.5.1"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "deploy": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
+    "test": "react-app-rewired test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

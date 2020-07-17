@@ -1,0 +1,23 @@
+
+body {
+  background: black;
+  max-width: 900px;/***********/
+  margin:auto;
+}
+
+.btn/*, .form-control*/ {
+  border-radius: 0;
+}
+
+.animate-fade-in {
+  animation: animate-fade-in 1s ease-out;
+}
+
+@keyframes animate-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
