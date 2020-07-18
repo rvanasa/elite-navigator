@@ -319,7 +319,7 @@ export default function App() {
                                                 {connection ? 'Connected' : reconnecting ? 'Connection not found' : 'Connect'}
                                             </Button>
                                             {!connection && (
-                                                <a href="bin/elite-navigator.exe" target="_blank">
+                                                <a href="data/elite-navigator.exe" target="_blank">
                                                     <Button
                                                         size=""
                                                         variant="outline-light"

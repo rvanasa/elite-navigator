@@ -1,5 +1,5 @@
 {
-  "name": "elite-navigator",
+  "name": "elite-navigator-web",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -33,7 +33,7 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "deploy": "util\\deploy.bat",
-    "gh-pages": "gh-pages -d build",
+    "deploy-static": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"
   },
