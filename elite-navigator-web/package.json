@@ -32,7 +32,8 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "deploy": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
+    "deploy": "util/deploy.bat",
+    "gh-pages": "gh-pages -d build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"
   },

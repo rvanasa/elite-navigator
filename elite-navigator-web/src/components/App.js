@@ -52,7 +52,7 @@ export default function App() {
         disconnect();
         bootbox.prompt({
             title: 'Connect to IP address:',
-            value: connection ? connection.io.uri.replace('ws://', '') : localStorage.getItem('websocket') || 'localhost',
+            value: connection ? connection.io.uri.replace('ws://', '') : localStorage['websocket'] || 'localhost',
             callback: address => {
                 if(address) {
                     localStorage['websocket'] = address || '';
@@ -76,6 +76,7 @@ export default function App() {
         if(connection) {
             connection.close();
         }
+        localStorage['websocket'] = '';
         setConnection(null);
         setReconnecting(false);
         setPlayer(null);
@@ -115,8 +116,8 @@ export default function App() {
                     <h4 className="text-center text-light mb-5 animate-fade-in" style={{animationDuration: '1s'}}>
                         Loading galaxy data...
                     </h4>
-                    <img className="w-100 animate-fade-in" style={{animationDuration: '4s'}} src="img/loading.png"
-                         alt="Loading..."/>
+                    <img className="d-block mx-auto animate-fade-in" style={{animationDuration: '4s'}}
+                         src="img/favicon.png" alt="Loading..."/>
                 </div>
             </div>
         );
@@ -315,8 +316,19 @@ export default function App() {
                                                 className="w-100 py-2 my-3"
                                                 style={{opacity: connection && .5}}
                                                 onClick={() => connection ? disconnect() : promptConnect()}>
-                                                {connection ? 'Connected' : reconnecting ? 'Connection Not Found' : 'Connect'}
+                                                {connection ? 'Connected' : reconnecting ? 'Connection not found' : 'Connect'}
                                             </Button>
+                                            {!connection && (
+                                                <a href="bin/elite-navigator.exe" target="_blank">
+                                                    <Button
+                                                        size=""
+                                                        variant="outline-light"
+                                                        className="w-100 py-2 my-2"
+                                                        style={{opacity: .7}}>
+                                                        Download location sync
+                                                    </Button>
+                                                </a>
+                                            )}
                                             {connection && currentTab === 'settings' && (<>
                                                 <ExpandableList
                                                     items={player.journal.filter(isEntryVisible)}

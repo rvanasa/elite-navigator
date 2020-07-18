@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Elite Navigator local uplink",
   "keywords": [
-    "Elite Dangerous"
+    "Elite Dangerous",
+    "Navigator",
+    "Client"
   ],
   "author": "Ryan Vandersmith <https://rvanasa.github.io>",
   "license": "ISC",
