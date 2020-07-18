@@ -12,7 +12,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node .",
-    "build": "pkg index.js --targets win --output dist/bin/navigator-uplink"
+    "build": "pkg index.js --targets win --output ../elite-navigator-web/public/data/elite-navigator"
   },
   "dependencies": {
     "chokidar": "^3.4.0",

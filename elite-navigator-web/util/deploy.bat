@@ -1,9 +1,8 @@
-cd %~dp0
+cd %~dp0..\..\elite-navigator-util || exit /B 1
+call npm start || exit /B 1
+
+cd %~dp0..\..\elite-navigator-uplink || exit /B 1
 call npm run build || exit /B 1
 
-cd %~dp0\..\elite-navigator-uplink
-call npm run build || exit /B 1
-move /Y build %~dp0\build\public || exit /B 1
-
-cd %~dp0
-call npm run gh-pages
+cd %~dp0..\
+call npm run gh-pages || exit /B 1
