@@ -9,10 +9,9 @@ let app = require('express')();
 let server = require('http').createServer(app);
 let io = require('socket.io')(server);
 
-console.log('Local IP address:', v4.sync());
-
 server.listen(port, () => {
     console.log('Listening on port', port);
+    console.log('Connect via localhost or IP address:', v4.sync());
 });
 
 io.on('connection', conn => {

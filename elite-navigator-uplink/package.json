@@ -10,7 +10,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node .",
-    "build": "pkg index.js --targets linux,macos,win --output dist/bin/navigator-uplink"
+    "build": "pkg index.js --targets win --output dist/bin/navigator-uplink"
   },
   "dependencies": {
     "chokidar": "^3.4.0",

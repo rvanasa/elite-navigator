@@ -4,7 +4,7 @@ import {FilterContext} from './Contexts';
 export default function ExpandableList(props) {
     let {items, size, ignoreFilter, ignoreSort, render} = props;
     
-    let [maxItems, setMaxItems] = useState(size || 10);
+    let [maxItems, setMaxItems] = useState(size || 1);
     
     // if(typeof items === 'function') {
     //     items = items(maxItems);

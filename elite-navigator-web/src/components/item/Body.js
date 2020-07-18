@@ -1,14 +1,18 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import StarSystem from './StarSystem';
 import Item from './Item';
 import {GiAsteroid, GiVibratingBall, IoMdPlanet} from 'react-icons/all';
+import {GalaxyContext} from '../Contexts';
 
 export default function Body(props) {
     let {body} = props;
     
-    // let galaxy = useContext(GalaxyContext);
+    let galaxy = useContext(GalaxyContext);
     
-    // let body = {name: body, type: }
+    body = galaxy.getBody(body);
+    if(!body) {
+        return <Item variant="secondary" name={typeof props.body === 'string' ? props.body : '(Body)'}/>;
+    }
     
     let Icon = body.starDistance ? IoMdPlanet : GiVibratingBall;
     

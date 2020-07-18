@@ -9,26 +9,27 @@ const api = axios.create({
     adapter: cache.adapter,
 });
 
-const apiPath = '__data';
-
 const starDistanceFactor = 1e-4;
 
-let currentGalaxy = null;
-
 class Galaxy {
-    constructor() {
-        this.ships = {};
-        this.modules = {};
-        this.systems = {};
-        this.stations = {};
+    constructor(data) {
+        this.ships = data.ships;
+        this.modules = data.modules;
+        this.systems = data.systems;
+        this.stations = data.stations;
+        this.bodies = data.bodies;
         
+        console.assert(Object.keys(data).every(k => this.hasOwnProperty(k)));
+        
+        this.materialTypes = ['Raw', 'Manufactured', 'Encoded'];
         this.ringTypes = ['Rocky', 'Icy', 'Metallic', 'Metal Rich'];
-        this.ringBodies = [];
         
         this.searchOptions = [];
         
         this._relativeSystem = null;
         this._sortedSystems = [];
+        this._sortedStations = [];
+        this._sortedBodies = [];
     }
     
     _getSearchTerms(text) {
@@ -38,7 +39,7 @@ class Galaxy {
         return [...new Set(text.toString().toLowerCase().replace(/[^a-z0-9 ]/, ' ').split(' ').map(s => s.trim()).filter(s => !!s))].sort();
     }
     
-    _register(type, option) {
+    _registerSearch(type, option) {
         option._type = type;
         option._searchTerms = [
             ...new Set([option.name, ...Object.values(option.attributes).filter(v => typeof v === 'string')]
@@ -75,6 +76,10 @@ class Galaxy {
         return this._resolve(this.stations, station);
     }
     
+    getBody(body) {
+        return this._resolve(this.bodies, body);
+    }
+    
     getDistanceBetweenSystems(a, b) {
         let [dx, dy, dz] = [a.x - b.x, a.y - b.y, a.z - b.z];
         return Math.round(Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2));
@@ -96,15 +101,39 @@ class Galaxy {
             //     console.log(d, s._currentDistance, s._distanceModifier || 0);///////////////////////
             // }
             s._currentDistance = d;
-            if(s.children) {
-                s.children.forEach(c => updateDistance(d, c));
+            if(s._children) {
+                s._children.forEach(c => updateDistance(d, c));
             }
         };
         this._sortedSystems.forEach(s => updateDistance(system ? this.getDistanceBetweenSystems(system, s) : 0, s));
         this._sortedSystems.sort((a, b) => system ? a._currentDistance - b._currentDistance : a.name - b.name);
         
-        this.ringBodies.sort((a, b) => a._currentDistance - b._currentDistance);
+        this._sortedStations.sort((a, b) => system ? a._currentDistance - b._currentDistance : a.name - b.name);
+        
+        this._sortedBodies.sort((a, b) => system ? a._currentDistance - b._currentDistance : a.name - b.name);
         return system;
+    }
+    
+    getNearestSystems(filterFn, count) {
+        let results = [];
+        if(arguments.length < 2) {
+            count = Number.POSITIVE_INFINITY;
+        }
+        else if(count <= 0) {
+            return results;
+        }
+        if(!filterFn) {
+            return this._sortedSystems.slice(0, count);
+        }
+        for(let system of this._sortedSystems) {
+            if(filterFn(system)) {
+                results.push(system);
+                if(results.length >= count) {
+                    break;
+                }
+            }
+        }
+        return results;
     }
     
     getNearestStations(filterFn, count) {
@@ -115,13 +144,14 @@ class Galaxy {
         else if(count <= 0) {
             return results;
         }
-        for(let system of this._sortedSystems) {
-            for(let station of system.stations) {
-                if(filterFn(station)) {
-                    results.push(station);
-                    if(results.length >= count) {
-                        break;
-                    }
+        if(!filterFn) {
+            return this._sortedStations.slice(0, count);
+        }
+        for(let station of this._sortedStations) {
+            if(filterFn(station)) {
+                results.push(station);
+                if(results.length >= count) {
+                    break;
                 }
             }
         }
@@ -133,10 +163,10 @@ class Galaxy {
         if(count <= 0) {
             return results;
         }
-        for(let body of this.ringBodies) {
+        for(let body of this._sortedBodies) {
             if(body.rings) {
                 for(let ring of body.rings) {
-                    if(ring.type === type) {
+                    if(!type || ring.type === type) {
                         results.push(body);
                         break;
                     }
@@ -221,10 +251,6 @@ function getModuleAttributes() {
     };
 }
 
-function getShipAttributes() {
-    return {};
-}
-
 function getSystemAttributes() {
     return {
         'Allegiance': this.allegiance,
@@ -241,134 +267,81 @@ function getSystemAttributes() {
 function getStationAttributes() {
     return {
         'Type': this.Type,
+        'Economy': this.economies.join(', '),
         'Services': this.services.join(', '),
     };
 }
 
-export async function requestGalaxy() {
-    let [modules, systems, stations, rings] = [
-        await api.get(apiPath + '/modules.json'),
-        await api.get(apiPath + '/systems_populated.json'),
-        await api.get(apiPath + '/stations.json'),
-        await api.get(apiPath + '/system_body_rings.json'),
-    ].map(res => res.data);
+function prepareData(data) {
+    for(let items of Object.values(data)) {
+        for(let item of Object.values(items)) {
+            for(let [key, ref] of Object.entries(item.$resolve)) {
+                let value = item[key];
+                if(Array.isArray(value)) {
+                    item[key] = value.map(v => data[ref][v]);
+                }
+                else {
+                    item[key] = data[ref][value];
+                }
+            }
+        }
+    }
+    return data;
+}
+
+export async function loadGalaxy() {
+    console.log('Loading galaxy...');
     
-    let galaxy = new Galaxy();
+    let data = prepareData((await api.get('data/galaxy.json')).data);
     
-    for(let module of modules) {
-        module = {
-            id: module.id,
-            name: module.name || module.group.name,
-            ship: module.ship,
-            class: module.class,
-            rating: module.rating,
-            category: module.category,
-            mode: module.weapon_mode,
-        };
+    let galaxy = new Galaxy(data);
+    
+    for(let ship of Object.values(galaxy.ships)) {
+        ship._type = 'ship';////
+    }
+    for(let module of Object.values(galaxy.modules)) {
         Object.defineProperty(module, 'attributes', {get: getModuleAttributes});
         
-        galaxy.modules[module.id] = module;
-        
-        if(module.ship) {
-            let ship = galaxy.getShip(module.ship);
-            if(!ship) {
-                ship = {
-                    name: module.ship,
-                };
-                Object.defineProperty(ship, 'attributes', {get: getShipAttributes});
-                galaxy.ships[ship.name.toLowerCase()] = ship;
-                galaxy._register('ship', ship);
-            }
-            module.ship = ship;
-            // ship.modules.push(module);
-        }
-        
-        galaxy._register('module', module);
+        galaxy._registerSearch('module', module);
     }
-    for(let system of systems) {
-        system = {
-            id: system.id,
-            x: system.x,
-            y: system.y,
-            z: system.z,
-            name: system.name,
-            allegiance: system.allegiance,
-            power: system.power,
-            faction: system.controlling_minor_faction,
-            powerState: system.power_state,
-            states: system.states.map(state => state.name),
-            reserveType: system.reserve_type,
-            population: system.population,
-            permitRequired: system.needs_permit,
-        };
+    for(let system of Object.values(galaxy.systems)) {
         Object.defineProperty(system, 'attributes', {get: getSystemAttributes});
         
-        galaxy.systems[system.id] = system;
-        galaxy.systems[system.name.toLowerCase()] = system;
+        galaxy.systems[system.name.toLowerCase()] = system;////
         galaxy._sortedSystems.push(system);
         
-        system.stations = [];
-        system.children = [];////
+        system.stations.sort((a, b) => a.starDistance - b.starDistance);///
+        system.bodies.sort((a, b) => a.starDistance - b.starDistance);///
         
-        galaxy._register('system', system);
+        system._children = [...system.stations, ...system.bodies]
+            .sort((a, b) => a.starDistance - b.starDistance);///
+        
+        galaxy._registerSearch('system', system);
     }
-    for(let station of stations) {
-        station = {
-            id: station.id,
-            name: station.name,
-            type: station.type,
-            system: galaxy.getSystem(station.system_id),
-            ships: station.selling_ships.map(id => galaxy.getShip(id)),
-            modules: station.selling_modules.map(id => galaxy.getModule(id)),
-            starDistance: station.distance_to_star,
-            planetary: station.is_planetary,
-            services: [
-                station.has_refuel && 'Refuel',
-                station.has_repair && 'Repair',
-                station.has_rearm && 'Rearm',
-                station.has_market && 'Market',
-                station.has_blackmarket && 'Black Market',
-                station.has_outfitting && 'Outfitting',
-                station.has_shipyard && 'Shipyard',
-            ].filter(s => s),
-        };
+    for(let station of Object.values(galaxy.stations)) {
         Object.defineProperty(station, 'attributes', {get: getStationAttributes});
         
-        galaxy.stations[station.id] = station;
-        
-        if(station.system) {
-            station.system.children.push(station);////
-            station.system.stations.push(station);
-            station.system.stations.sort((a, b) => a.starDistance - b.starDistance);
-        }
+        galaxy._sortedStations.push(station);
         
         station._distanceModifier = station.starDistance * starDistanceFactor;
         
-        galaxy._register('station', station);
+        galaxy._registerSearch('station', station);
     }
-    for(let [systemName, bodyMap] of Object.entries(rings)) {
-        let system = galaxy.getSystem(systemName);
-        if(system) {
-            for(let [bodyName, body] of Object.entries(bodyMap)) {
-                body = {
-                    _type: 'body',
-                    name: (`${systemName} ${bodyName}`).trim(),
-                    system: system,
-                    starDistance: body.distance,
-                    rings: body.rings,
-                };
-                body._distanceModifier = body.starDistance * starDistanceFactor;
-                system.children.push(body);
-                galaxy.ringBodies.push(body);
-            }
-        }
+    for(let body of Object.values(data.bodies)) {
+        body._type = 'body'; ////////
+        
+        galaxy._sortedBodies.push(body);
+        
+        body._distanceModifier = body.starDistance * starDistanceFactor;
     }
     return galaxy;
 }
 
+let currentGalaxyPromise = null;
+
 export async function findGalaxy() {
-    if(!currentGalaxy) {
-        currentGalaxy = requestGalaxy();
+    if(!currentGalaxyPromise) {
+        currentGalaxyPromise = loadGalaxy();
     }
-    return currentGalaxy;
+    return currentGalaxyPromise;
 }

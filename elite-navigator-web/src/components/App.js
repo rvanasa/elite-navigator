@@ -110,14 +110,13 @@ export default function App() {
     if(!galaxy) {
         findGalaxy().then(galaxy => setGalaxy(galaxy));
         return (
-            // <div className="d-flex align-items-center justify-content-center animate-fade-in cursor-default"
-            //      style={{width: '100vw', height: '100vh'}}>
             <div style={{marginTop: '20vh'}}>
                 <div style={{maxWidth: '960px', animationDuration: '1s'}}>
-                    <h4 className="text-center text-light mb-5" style={{animationDuration: '4s'}}>
+                    <h4 className="text-center text-light mb-5 animate-fade-in" style={{animationDuration: '1s'}}>
                         Loading galaxy data...
                     </h4>
-                    <img className="w-100 animate-fade-in" src="img/loading.png" alt="Loading..."/>
+                    <img className="w-100 animate-fade-in" style={{animationDuration: '4s'}} src="img/loading.png"
+                         alt="Loading..."/>
                 </div>
             </div>
         );
@@ -209,71 +208,84 @@ export default function App() {
                                       activeKey={currentTab}
                                       onSelect={onSelectTab}>
                                     <Tab eventKey="search" title={<FiSearch className="h4 mt-1"/>}>
-                                        {searchQuery && currentTab === 'search' ? (
-                                            <ExpandableList
-                                                items={searchResults}
-                                                size={20}
-                                                ignoreSort
-                                                render={(result, i) => (
-                                                    <SearchResult key={i} result={result}/>
-                                                )}/>
-                                        ) : (<>
-                                            <ExpandableList
-                                                items={favorites}
-                                                size={10}
-                                                ignoreSort
-                                                render={(item, i) => (
-                                                    <SearchResult key={i} result={item}/>
-                                                )}/>
-                                        </>)}
+                                        {currentTab === 'search' && (
+                                            searchQuery ? (
+                                                <ExpandableList
+                                                    items={searchResults}
+                                                    size={20}
+                                                    // ignoreSort
+                                                    render={(result, i) => (
+                                                        <SearchResult key={i} result={result}/>
+                                                    )}/>
+                                            ) : (<>
+                                                <ExpandableList
+                                                    items={favorites}
+                                                    size={10}
+                                                    // ignoreSort
+                                                    render={(item, i) => (
+                                                        <SearchResult key={i} result={item}/>
+                                                    )}/>
+                                                <ExpandableList
+                                                    items={galaxy.getNearestSystems(() => s => !favorites.includes(s), 80)}
+                                                    size={10}
+                                                    // ignoreSort
+                                                    render={(item, i) => (
+                                                        <SearchResult key={i} result={item}/>
+                                                    )}/>
+                                            </>)
+                                        )}
                                     </Tab>
                                     <Tab eventKey="nearby" title={<FiMapPin className="h4 mt-1"/>}>
                                         {currentTab === 'nearby' && (<>
                                             <div className="mt-2">
                                                 <Category name="Nearby stations" detail={() => (
                                                     <ExpandableList
-                                                        items={galaxy.getNearestStations(() => true)}
+                                                        items={galaxy.getNearestStations()}
                                                         size={3}
-                                                        ignoreSort
+                                                        // ignoreSort
                                                         render={(station, i) => (
                                                             <SearchResult key={i} result={station}/>
                                                         )}/>
                                                 )}/>
-                                                <Category name="Ring types" detail={() => (
-                                                    galaxy.ringTypes.map((type, i) => (
-                                                        <Category key={i} name={type} detail={() => (
+                                                <Category name="Pristine rings" detail={() => (<>
+                                                    {/*<SettingToggle*/}
+                                                    {/*    setting="allResourceTypes"*/}
+                                                    {/*    inverted*/}
+                                                    {/*    label="Pristine"/>*/}
+                                                    {galaxy.ringTypes.map((type, i) => (
+                                                        <Category key={i} name={type} detail={() => (<>
                                                             <ExpandableList
-                                                                items={galaxy.getNearestRingBodies(type)}
+                                                                items={galaxy.getNearestRingBodies(type).filter(b => settings.allResourceTypes || b.system.reserveType === 'Pristine')}
                                                                 size={2}
-                                                                ignoreSort
+                                                                // ignoreSort
                                                                 render={(body, i) => (
                                                                     <Body key={i} body={body}/>
                                                                 )}/>
-                                                        )}/>
-                                                    ))
-                                                )}/>
+                                                        </>)}/>
+                                                    ))}
+                                                </>)}/>
                                                 <Category name="Material traders" detail={() => (
-                                                    ['Raw', 'Manufactured', 'Encoded'].map((type, i) => (
+                                                    galaxy.materialTypes.map((type, i) => (
                                                         <Category key={i} name={type} detail={() => (
                                                             <ExpandableList
                                                                 items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}
                                                                 size={2}
-                                                                ignoreSort
-                                                                render={(body, i) => (
-                                                                    <Station key={i} body={body}/>
+                                                                // ignoreSort
+                                                                render={(station, i) => (
+                                                                    <Station key={i} station={station}/>
                                                                 )}/>
                                                         )}/>
                                                     ))
                                                 )}/>
-                                                <Category name="Contacts" detail={() => (
+                                                <Category name="Services" detail={() => (
                                                     ['Interstellar Factors', 'Technology Broker'].map((type, i) => (
                                                         <Category key={i} name={sentenceCase(type)} detail={() => (
                                                             <ExpandableList
                                                                 items={galaxy.getNearestStations(s => s.services.includes(type))}
                                                                 size={2}
-                                                                ignoreSort
-                                                                render={(body, i) => (
-                                                                    <Body key={i} body={body}/>
+                                                                // ignoreSort
+                                                                render={(station, i) => (
+                                                                    <Station key={i} station={station}/>
                                                                 )}/>
                                                         )}/>
                                                     ))

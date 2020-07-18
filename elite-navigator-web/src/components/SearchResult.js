@@ -3,6 +3,7 @@ import Station from './item/Station';
 import Module from './item/Module';
 import StarSystem from './item/StarSystem';
 import Ship from './item/Ship';
+import Body from './item/Body';
 
 const resultMap = {
     ship(result) {
@@ -17,6 +18,9 @@ const resultMap = {
     station(result) {
         return <Station station={result}/>;
     },
+    body(result) {
+        return <Body body={result}/>;
+    },
 };
 
 export default function SearchResult(props) {
@@ -24,7 +28,8 @@ export default function SearchResult(props) {
     
     let renderFn = resultMap[result._type];
     if(!renderFn) {
-        console.warn('[Search result]', result._type, result);
+        console.error('[Search result]', result._type, result);
+        throw new Error('Unknown search result type: ' + result._type);
     }
     
     return renderFn(result);

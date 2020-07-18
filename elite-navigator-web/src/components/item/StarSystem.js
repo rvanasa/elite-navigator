@@ -31,6 +31,9 @@ export default function StarSystem(props) {
                 <ExpandableList items={system.stations} size={5} render={(item, i) => (
                     <SearchResult key={i} result={item}/>
                 )}/>
+                {/*<ExpandableList items={system.bodies} size={5} render={(item, i) => (*/}
+                {/*    <SearchResult key={i} result={item}/>*/}
+                {/*)}/>*/}
             </>)}>
         </Item>
     );

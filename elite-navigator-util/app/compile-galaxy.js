@@ -2,7 +2,10 @@
 
 const fs = require('fs');
 const axios = require('axios');
-const msgpack = require('msgpack-lite');
+const mkdirp = require('mkdirp');
+
+console.log('Download data');
+mkdirp('./data');
 
 console.log('Import data');
 let modules = require('../data/eddb_modules.json');
@@ -16,8 +19,7 @@ let galaxy = {
     modules: {},
     systems: {},
     stations: {},
-    ringTypes: ['Rocky', 'Icy', 'Metallic', 'Metal Rich'],
-    ringBodies: [],
+    bodies: {},
 };
 
 let systemNameMap = {};
@@ -40,10 +42,10 @@ for(let module of modules) {
     galaxy.modules[module.id] = module;
     
     if(module.ship) {
-        // let ship = galaxy.getShip(module.ship);
         let ship = galaxy.ships[module.ship.toLowerCase()];
         if(!ship) {
             ship = {
+                $resolve: {},
                 name: module.ship,
             };
             galaxy.ships[ship.name.toLowerCase()] = ship;
@@ -56,6 +58,7 @@ for(let system of systems) {
     system = {
         $resolve: {
             stations: 'stations',
+            bodies: 'bodies',
         },
         id: system.id,
         x: system.x,
@@ -99,6 +102,7 @@ for(let station of stations) {
         modules: station.selling_modules,
         starDistance: station.distance_to_star,
         planetary: station.is_planetary,
+        economies: station.economies,
         services: [
             station.has_refuel && 'Refuel',
             station.has_repair && 'Repair',
@@ -110,15 +114,15 @@ for(let station of stations) {
         ].filter(s => s),
     };
     
-    let system = galaxy.systems[station.system_id];
-    if(system) {
-        system.stations.push(station.id);
-        
-        // system.stations.sort((a, b) => galaxy.stations[a].starDistance - galaxy.stations[b].starDistance);
+    if(!station.type || station.type === 'Fleet Carrier') {
+        continue;
     }
-    else {
-        break;
+    
+    let system = galaxy.systems[station.system];
+    if(!system) {
+        throw new Error('Unknown system: ' + station.system + ' (' + station.name + ')');
     }
+    system.stations.push(station.id);
     
     galaxy.stations[station.id] = station;
     
@@ -127,29 +131,37 @@ for(let station of stations) {
 
 console.log('Stations (EDSM)');
 for(let edsmStation of edsmStations) {
-    let system = systemNameMap[edsmStation.system];
-    if(!system) {
-        // throw new Error('Unknown system: ' + edsmStation.system);
-        break;
+    
+    if(!edsmStation.type || edsmStation.type === 'Fleet Carrier' || edsmStation.type === 'Mega ship') {
+        continue;
     }
-    let station = system.stations.filter(station => station.name === edsmStation.name)[0];
+    
+    let system = systemNameMap[edsmStation.systemName.toLowerCase()];
+    if(!system) {
+        throw new Error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
+        // console.warn('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
+        // continue;
+    }
+    let station = galaxy.stations[system.stations.filter(station => galaxy.stations[station].name === edsmStation.name)[0]];
     if(!station) {
-        throw new Error('Unknown station: ' + system.name + ' : ' + edsmStation.name);
+        console.error('Unknown station:', edsmStation.name, ':', edsmStation.type);
+        continue;
+        // throw new Error('Unknown station: ' + system.name + ' : ' + edsmStation.name);
     }
     
     // let materialType =
     
-    station.economies = [edsmStation.economy];
-    if(edsmStation.secondEconomy) {
-        station.economies.push(edsmStation.secondEconomy);
-    }
+    // station.economies = [edsmStation.economy];
+    // if(edsmStation.secondEconomy) {
+    //     station.economies.push(edsmStation.secondEconomy);
+    // }
     
     let edsmServices = edsmStation.otherServices;
     station.services.push(...[
         edsmServices.includes('Interstellar Factors Contact') && 'Interstellar Factors',
         edsmServices.includes('Technology Broker') && 'Technology Broker',
         edsmServices.includes('Material Trader') && (
-            station.economies.includes('High Tech') ? 'Encoded'
+            station.economies[0] === 'High Tech' ? 'Encoded'
                 : ['Refinery', 'Extraction'].includes(station.economies[0]) ? 'Raw' : 'Manufactured' //TODO disambiguate
         ) + ' Material Trader',
     ].filter(s => s));
@@ -157,30 +169,30 @@ for(let edsmStation of edsmStations) {
 
 console.log('Rings');
 for(let [systemName, bodyMap] of Object.entries(rings)) {
-    let system = systemNameMap[systemName];
+    let system = systemNameMap[systemName.toLowerCase()];
     if(system) {
         for(let [bodyName, body] of Object.entries(bodyMap)) {
             body = {
                 $resolve: {
                     system: 'systems',
                 },
-                _type: 'body',
-                name: (`${systemName} ${bodyName}`).trim(),
+                name: `${systemName} ${bodyName}`.trim(),
                 system: system.id,
                 starDistance: body.distance,
                 rings: body.rings,
             };
-            // body._distanceModifier = body.starDistance * starDistanceFactor;
-            system.bodies.push(body);
-            galaxy.ringBodies.push(body);
+            let id = body.name.toLowerCase();
+            galaxy.bodies[id] = body;
+            system.bodies.push(id);
         }
     }
 }
 
 console.log('Export');
 let data = JSON.stringify(galaxy, function(key, value) {
-    if(key === '$resolve' && !(this in galaxy)) {
-        throw new Error('Reference required for key: ' + key + ' {' + Object.keys(this).split(', ') + '}');
+    if(value && value.$resolve && !Object.values(galaxy).includes(this)) {
+        throw new Error(`Reference required for object with key '${key}' in (${Object.keys(this).join(', ')})`);
     }
+    return value;
 });
-fs.writeFileSync('../elite-navigator/public/data/galaxy.json', data);
+fs.writeFileSync('../elite-navigator-web/public/data/galaxy.json', data);

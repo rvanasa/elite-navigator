@@ -7,7 +7,7 @@ export default function Item(props) {
     let {handle, variant, icon, name, sub, below, detail, children} = props;
     
     let [isSelected, setSelected] = useState(false);
-    let [subSelected, setSubSelected] = useState(null);
+    let [detailSelected, setDetailSelected] = useState(null);
     
     let filterContext = useContext(FilterContext);
     let selectContext = useContext(SelectContext);
@@ -25,7 +25,7 @@ export default function Item(props) {
     if(selectContext.selected !== handle) {
         isSelected = false;
     }
-    else if(subSelected) {
+    else if(detailSelected) {
         isSelected = true;
     }
     
@@ -36,6 +36,7 @@ export default function Item(props) {
     function toggleSelected() {
         setSelected(!isSelected);
         selectContext.setSelected(isSelected ? null : handle);
+        setDetailSelected(null);///
     }
     
     let relevantAttributes = null;
@@ -50,13 +51,10 @@ export default function Item(props) {
     
     let isFavorite = filterContext.favorites.includes(handle);/////
     
-    let favoriteColor = '#5b5ad5';
-    let borderStyle = 'solid 2px ' + (isFavorite ? favoriteColor : '#424345');
-    
     function renderDetail() {
         let subSelectContext = {
-            selected: subSelected,
-            setSelected: setSubSelected,
+            selected: detailSelected,
+            setSelected: item => setDetailSelected(item) & setSelected(true),
             ancestors: [...selectContext.ancestors, handle],
         };
         return (
@@ -69,19 +67,27 @@ export default function Item(props) {
         );
     }
     
+    let borderColor = '#424345';
+    let favoriteColor = '#5b5ad5';
+    let borderStyle = 'solid 2px ' + (isFavorite ? favoriteColor : borderColor);
+    
     return (
         <div className="m-0 mb-1 rounded-lg"
              style={{
-                 background: isSelected ? '#333' : '#222',
-                 borderLeft: detail ? `solid 6px ${isFavorite ? favoriteColor : '#76777A'}` : borderStyle,
+                 background: isSelected ? '#333' : '#1A1A1A',
+                 borderLeft: detail ? `solid 6px ${!isSelected && selectContext.selected ? borderColor : isFavorite ? favoriteColor : '#76777A'}` : borderStyle,
                  borderTop: borderStyle,
                  borderRight: borderStyle,
                  borderBottom: borderStyle,
+                 // animation: isFavorite && 'swipe-right .4s ease-out',
              }}>
             <Swipeable
                 onSwipedLeft={() => filterContext.removeFavorite(handle)}
                 onSwipedRight={() => filterContext.addFavorite(handle)}>
                 <div className="cursor-pointer p-2"
+                     style={{
+                         opacity: !isSelected && selectContext.selected ? .8 : 1,/////
+                     }}
                      onClick={selectContext && detail && (e => e.stopPropagation() & toggleSelected())}>
                     <div className="d-flex">
                         {(icon || name) && (

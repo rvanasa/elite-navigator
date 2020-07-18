@@ -41,17 +41,19 @@ export default function JournalEntry(props) {
                   )}
               </>)}
               sub={entry.timestamp.getUTCHours().toString().padStart(2, '0') + ':' + entry.timestamp.getUTCMinutes().toString().padStart(2, '0')}>
-            {entry.StationName ? (
-                <Station station={[entry.StarSystem, entry.StationName]}/>
-            ) : entry.Body || entry.BodyName ? (
-                <Body body={cached(item || {
-                    id: entry.BodyID,
-                    name: entry.Body || entry.BodyName,
-                    // type: entry.BodyType,
-                    system: entry.StarSystem,
-                })}/>
-            ) : entry.StarSystem && (
-                <StarSystem system={entry.StarSystem}/>
+            {entry.StarSystem && (
+                entry.StationName ? (
+                    <Station station={[entry.StarSystem, entry.StationName]}/>
+                ) : entry.Body || entry.BodyName ? (
+                    <Body body={cached(item || {
+                        id: entry.BodyID,
+                        name: entry.Body || entry.BodyName,
+                        // type: entry.BodyType,
+                        system: entry.StarSystem,
+                    })}/>
+                ) : (
+                    <StarSystem system={entry.StarSystem}/>
+                )
             )}
             {entry.Ship_Localised && (
                 <Ship ship={cached(item || {
