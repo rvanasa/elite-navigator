@@ -67,8 +67,8 @@ export default function App() {
         setReconnecting(true);
         let connection = await tryConnect(address);
         setConnection(connection);
-        setCurrentTab('nearby');
         setReconnecting(false);
+        // setCurrentTab('nearby');
         return connection;
     }
     
@@ -89,6 +89,7 @@ export default function App() {
         messageListener = data => {
             console.warn(data);
             player.update(data);
+            setPlayer(null);////
             setPlayer(player);
         };
         connection.on('message', messageListener);
@@ -122,6 +123,8 @@ export default function App() {
             </div>
         );
     }
+    
+    currentTab = currentTab || (connection ? 'nearby' : 'settings');///
     
     let relativeSystem = galaxy.setRelativeSystem(galaxy.getSystem(parseInt(customSystemName) ? null : customSystemName) || player.getCurrentSystem() || 'Sol');
     
@@ -194,7 +197,9 @@ export default function App() {
                                     {player.name && (
                                         <h6 className="text-primary float-right mt-1">CMDR {player.name}</h6>
                                     )}
-                                    <h5 className={'text-' + (relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' : 'light')}>{relativeSystem.name}</h5>
+                                    <h5 className={'text-' + (relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' : connection ? 'info' : 'light')}>
+                                        {relativeSystem.name}
+                                    </h5>
                                 </div>
                                 <InputGroup size="lg" className="mb-2">
                                     <input type="text"
@@ -205,8 +210,7 @@ export default function App() {
                                         // onFocus={() => setCurrentTab('search')}
                                            onChange={e => doSearch(e.target.value)}/>
                                 </InputGroup>
-                                <Tabs defaultActiveKey={connection ? 'nearby' : 'settings'}
-                                      activeKey={currentTab}
+                                <Tabs activeKey={currentTab}
                                       onSelect={onSelectTab}>
                                     <Tab eventKey="search" title={<FiSearch className="h4 mt-1"/>}>
                                         {currentTab === 'search' && (
@@ -279,7 +283,7 @@ export default function App() {
                                                     ))
                                                 )}/>
                                                 <Category name="Services" detail={() => (
-                                                    ['Interstellar Factors', 'Technology Broker'].map((type, i) => (
+                                                    ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
                                                         <Category key={i} name={sentenceCase(type)} detail={() => (
                                                             <ExpandableList
                                                                 items={galaxy.getNearestStations(s => s.services.includes(type))}
