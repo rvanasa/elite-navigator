@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "https://rvanasa.github.io/time-winder/static/css/main.ab9a89bd.chunk.css",
+    "main.js": "https://rvanasa.github.io/time-winder/static/js/main.1d1df706.chunk.js",
+    "main.js.map": "https://rvanasa.github.io/time-winder/static/js/main.1d1df706.chunk.js.map",
+    "runtime-main.js": "https://rvanasa.github.io/time-winder/static/js/runtime-main.aa122eab.js",
+    "runtime-main.js.map": "https://rvanasa.github.io/time-winder/static/js/runtime-main.aa122eab.js.map",
+    "static/js/2.a60d5466.chunk.js": "https://rvanasa.github.io/time-winder/static/js/2.a60d5466.chunk.js",
+    "static/js/2.a60d5466.chunk.js.map": "https://rvanasa.github.io/time-winder/static/js/2.a60d5466.chunk.js.map",
+    "index.html": "https://rvanasa.github.io/time-winder/index.html",
+    "precache-manifest.ed6942c269a27ed73b4382f3129f828d.js": "https://rvanasa.github.io/time-winder/precache-manifest.ed6942c269a27ed73b4382f3129f828d.js",
+    "service-worker.js": "https://rvanasa.github.io/time-winder/service-worker.js",
+    "static/css/main.ab9a89bd.chunk.css.map": "https://rvanasa.github.io/time-winder/static/css/main.ab9a89bd.chunk.css.map",
+    "static/js/2.a60d5466.chunk.js.LICENSE.txt": "https://rvanasa.github.io/time-winder/static/js/2.a60d5466.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.aa122eab.js",
+    "static/js/2.a60d5466.chunk.js",
+    "static/css/main.ab9a89bd.chunk.css",
+    "static/js/main.1d1df706.chunk.js"
+  ]
+}

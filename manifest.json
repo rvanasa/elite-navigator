@@ -1,0 +1,14 @@
+{
+  "short_name": "Time Winder",
+  "name": "The Time Winder",
+  "icons": [
+    {
+      "src": "img/favicon.png",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
