@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css",
-    "main.js": "https://rvanasa.github.io/elite-navigator/static/js/main.90804cee.chunk.js",
-    "main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/main.90804cee.chunk.js.map",
+    "main.js": "https://rvanasa.github.io/elite-navigator/static/js/main.373b88fd.chunk.js",
+    "main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/main.373b88fd.chunk.js.map",
     "runtime-main.js": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js",
     "runtime-main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js.map",
-    "static/js/2.16f831b2.chunk.js": "https://rvanasa.github.io/elite-navigator/static/js/2.16f831b2.chunk.js",
-    "static/js/2.16f831b2.chunk.js.map": "https://rvanasa.github.io/elite-navigator/static/js/2.16f831b2.chunk.js.map",
+    "static/js/2.1a162557.chunk.js": "https://rvanasa.github.io/elite-navigator/static/js/2.1a162557.chunk.js",
+    "static/js/2.1a162557.chunk.js.map": "https://rvanasa.github.io/elite-navigator/static/js/2.1a162557.chunk.js.map",
     "index.html": "https://rvanasa.github.io/elite-navigator/index.html",
-    "precache-manifest.d102bd629e0bb6a224a1f2426c119a62.js": "https://rvanasa.github.io/elite-navigator/precache-manifest.d102bd629e0bb6a224a1f2426c119a62.js",
+    "precache-manifest.e1845088c884a2523643fa5154a33b07.js": "https://rvanasa.github.io/elite-navigator/precache-manifest.e1845088c884a2523643fa5154a33b07.js",
     "service-worker.js": "https://rvanasa.github.io/elite-navigator/service-worker.js",
     "static/css/main.43e639a8.chunk.css.map": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css.map",
-    "static/js/2.16f831b2.chunk.js.LICENSE.txt": "https://rvanasa.github.io/elite-navigator/static/js/2.16f831b2.chunk.js.LICENSE.txt"
+    "static/js/2.1a162557.chunk.js.LICENSE.txt": "https://rvanasa.github.io/elite-navigator/static/js/2.1a162557.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.5ed3ceab.js",
-    "static/js/2.16f831b2.chunk.js",
+    "static/js/2.1a162557.chunk.js",
     "static/css/main.43e639a8.chunk.css",
-    "static/js/main.90804cee.chunk.js"
+    "static/js/main.373b88fd.chunk.js"
   ]
 }
