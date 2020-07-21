@@ -241,6 +241,11 @@ class Galaxy {
     }
 }
 
+function getShipAttributes() {
+    return {
+    };
+}
+
 function getModuleAttributes() {
     return {
         'Group': this.groupName,
@@ -297,7 +302,11 @@ export async function loadGalaxy() {
     let galaxy = new Galaxy(data);
     
     for(let ship of Object.values(galaxy.ships)) {
-        ship._type = 'ship';////
+        // ship._type = 'ship';////
+    
+        Object.defineProperty(ship, 'attributes', {get: getShipAttributes});
+        
+        galaxy._registerSearch('ship', ship);
     }
     for(let module of Object.values(galaxy.modules)) {
         Object.defineProperty(module, 'attributes', {get: getModuleAttributes});

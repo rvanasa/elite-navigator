@@ -13,17 +13,17 @@ let pendingPromise = null;
 
 export async function tryConnect(address) {
     address = address.replace('ws://', '');
-    if(!address) {
+    if (!address) {
         address = defaultHost;
     }
-    if(!address.includes(':')) {
+    if (!address.includes(':')) {
         address += ':' + defaultPort;
     }
     address = 'ws://' + address;
-    if(address === pendingAddress && pendingPromise) {
+    if (address === pendingAddress && pendingPromise) {
         return pendingPromise;
     }
-    if(currentConnection) {
+    if (currentConnection) {
         currentConnection.close();
     }
     currentConnection = null;
@@ -31,30 +31,30 @@ export async function tryConnect(address) {
     pendingPromise = new Promise((resolve, reject) => {
         let connection = io.connect(address);
         currentConnection = connection;
-        
+
         connection.on('connect', () => {
             console.log('Connected');
-            
+
             let visibilityListener = () => {
-                if(connection !== currentConnection) {
+                if (connection !== currentConnection) {
                     document.removeEventListener('visibilitychange', visibilityListener);
                     return;
                 }
-                if(document.visibilityState === 'visible' && !connection.connected) {
+                if (document.visibilityState === 'visible' && !connection.connected) {
                     connection.connect();
                 }
             };
             document.addEventListener('visibilitychange', visibilityListener);
-            
+
             pendingAddress = pendingPromise = null;
             resolve(connection);
         });
-        
+
         connection.on('error', err => {
             pendingAddress = pendingPromise = null;
             reject(err);
         });
-        
+
         connection.on('disconnect', () => {
             console.log('Disconnected');
         });

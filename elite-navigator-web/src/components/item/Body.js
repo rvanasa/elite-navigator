@@ -1,8 +1,9 @@
 import React, {useContext} from 'react';
 import StarSystem from './StarSystem';
 import Item from './Item';
-import {GiAsteroid, GiVibratingBall, IoMdPlanet} from 'react-icons/all';
+import {BsBrightnessLow, GiAsteroid, GiVibratingBall, IoMdPlanet} from 'react-icons/all';
 import {GalaxyContext} from '../Contexts';
+import Attributes from '../Attributes';
 
 export default function Body(props) {
     let {body} = props;
@@ -14,7 +15,9 @@ export default function Body(props) {
         return <Item variant="secondary" name={typeof props.body === 'string' ? props.body : '(Body)'}/>;
     }
     
-    let Icon = body.starDistance ? IoMdPlanet : GiVibratingBall;
+    let system = galaxy.getSystem(body.system);
+    
+    let Icon = body.type && body.type.toLowerCase().includes('star') ? BsBrightnessLow : GiVibratingBall/*IoMdPlanet*/;
     
     return (
         <Item
@@ -23,8 +26,10 @@ export default function Body(props) {
             icon={<Icon/>}
             name={body.name || '(Body)'}
             sub={body.starDistance ? body.starDistance.toLocaleString() + ' Ls' : ''}
-            detail={() => (
-                body.rings && body.rings.map((ring, i) => (
+            below={<small className="text-muted">{body.type}</small>}
+            detail={() => (<>
+                <Attributes attributes={body.attributes}/>
+                {body.rings && body.rings.map((ring, i) => (
                     <Item
                         key={i}
                         variant="info"
@@ -32,8 +37,11 @@ export default function Body(props) {
                         name={ring.name}
                         icon={<GiAsteroid/>}
                         sub={ring.type}/>
-                )))}>
-            <StarSystem system={body.system}/>
+                ))}
+            </>)}>
+            {system && (
+                <StarSystem system={system}/>
+            )}
         </Item>
     );
 };

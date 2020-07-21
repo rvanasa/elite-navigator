@@ -6,4 +6,3 @@ call npm run build || exit /B 1
 
 cd %~dp0..
 call npm run deploy-static || exit /B 1
-

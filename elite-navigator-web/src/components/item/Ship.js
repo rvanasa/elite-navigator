@@ -22,14 +22,12 @@ export default function Ship(props) {
             nearbyStations = nearbyStations.filter(s => s.system.power === 'Li Yong-Rui');
         }
         return (<>
-            {!!nearbyStations.length && (<>
-                <Attributes attributes={ship.attributes}/>
-                {/*<h6 className="text-muted">Purchase location:</h6>*/}
-                <SettingToggle setting="onlyDiscounts" label="15% discount" onToggle={() => setSelected(null)}/>
-                <ExpandableList items={nearbyStations} size={2} render={(station, i) => (
-                    <SearchResult key={i} result={station}/>
-                )}/>
-            </>)}
+            <Attributes attributes={ship.attributes}/>
+            {/*<h6 className="text-muted">Purchase location:</h6>*/}
+            <SettingToggle setting="onlyDiscounts" label="15% discount" onToggle={() => setSelected(null)}/>
+            <ExpandableList items={nearbyStations} size={2} render={(station, i) => (
+                <SearchResult key={i} result={station}/>
+            )}/>
         </>);
     }
     

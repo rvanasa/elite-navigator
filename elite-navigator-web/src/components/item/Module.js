@@ -25,14 +25,12 @@ export default function Module(props) {
             {module.ship && (
                 <Ship ship={module.ship}/>
             )}
-            {!!nearbyStations.length && (<>
-                <Attributes attributes={module.attributes}/>
-                {/*<h6 className="text-muted">Purchase location:</h6>*/}
-                <SettingToggle setting="onlyDiscounts" label="15% discount" onToggle={() => setSelected(null)}/>
-                <ExpandableList items={nearbyStations} size={2} render={(station, i) => (
-                    <SearchResult key={i} result={station}/>
-                )}/>
-            </>)}
+            <Attributes attributes={module.attributes}/>
+            {/*<h6 className="text-muted">Purchase location:</h6>*/}
+            <SettingToggle setting="onlyDiscounts" label="15% discount" onToggle={() => setSelected(null)}/>
+            <ExpandableList items={nearbyStations} size={2} render={(station, i) => (
+                <SearchResult key={i} result={station}/>
+            )}/>
         </>);
     }
     

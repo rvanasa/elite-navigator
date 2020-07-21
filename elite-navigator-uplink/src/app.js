@@ -1,6 +1,6 @@
 'use strict';
 
-const {watchJournalDirectory} = require('./service');
+const {watchJournalDirectory, findAllDiscoveries} = require('./service');
 const {v4} = require('internal-ip');
 
 let port = 4777;
@@ -16,28 +16,51 @@ server.listen(port, () => {
 
 io.on('connection', conn => {
     console.log('Connected');
-    
+
     function sendMessage(message) {
-        conn.emit('message', message, () => {
-            console.log('Acknowledged');
-        });
-    }
-    
-    let cleanup = watchJournalDirectory((err, message) => {
-        if(err) return console.error(err.toString());
         console.log('Message:', Object.keys(message));
-        
-        sendMessage(message);
+        conn.emit('message', message);
+    }
+
+    let cleanup = watchJournalDirectory((err, entries) => {
+        if(err) return console.error(err.toString());
+
+        console.log(entries.length, 'recent');
+
+        sendMessage({
+            journalEntries: entries,
+        });
     });
-    
-    conn.on('connect_timeout', () => {
-        console.log('Timeout');
-    });
-    
-    conn.on('reconnect_attempt', () => {
-        console.log('Reconnecting');
-    });
-    
+
+    findAllDiscoveries()
+        .then(entries => {
+            console.log(entries.length, 'discoveries');
+            sendMessage({
+                journalEntries: entries,
+            });
+        })
+        .catch(err => console.error(err));
+
+    // let discoveryPromise = null;
+
+    // conn.on('request_discoveries', () => {
+    //     console.log('Requesting discoveries');
+    //
+    //     if(!discoveryPromise) {
+    //         discoveryPromise = findAllDiscoveries();
+    //     }
+    //
+    //     discoveryPromise
+    //         .then(entries => {
+    //             console.log(entries.length, 'discoveries');
+    //             sendMessage({
+    //                 addDiscoveries: entries,
+    //             });
+    //         })
+    //         .catch(err => console.error(err));
+    //
+    // });
+
     conn.on('disconnect', () => {
         cleanup();
         console.log('Disconnected');

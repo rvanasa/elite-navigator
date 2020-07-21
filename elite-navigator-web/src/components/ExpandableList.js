@@ -6,11 +6,12 @@ export default function ExpandableList(props) {
     
     let [maxItems, setMaxItems] = useState(size || 1);
     
-    // if(typeof items === 'function') {
-    //     items = items(maxItems);
-    // }
-    
     let filterContext = useContext(FilterContext);
+    
+    if(!items || !items.length) {
+        return null;
+    }
+    
     if(filterContext) {
         if(!ignoreFilter) {
             items = items.filter(filterContext.filter);

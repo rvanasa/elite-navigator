@@ -11,17 +11,16 @@ const directory = `${process.env.USERPROFILE}/Saved Games/Frontier Developments/
 
 module.exports = {
     watchJournalDirectory(callback) {
-        let logQueue = [];
+        let queuedEntries = [];
         
         let collectLogEntries = debounce(() => {
-            console.log(logQueue.length);/////
-            callback(null, {addLogEntries: logQueue});
-            logQueue.length = 0;
+            callback(null, queuedEntries);
+            queuedEntries.length = 0;
         }, 100);
         
         function onLogEntry(err, entry) {
             if(err) return callback(err);
-            logQueue.push(entry);
+            queuedEntries.push(entry);
             collectLogEntries();
         }
         
@@ -39,7 +38,7 @@ module.exports = {
                 }
                 console.log('New log file:', filename);
                 try {
-                    cleanupStreams.push(module.exports.watchLogFile(filename, onLogEntry));
+                    tails.push(module.exports.watchLogFile(filename, onLogEntry));
                 }
                 catch(e) {
                     callback(e);
@@ -52,7 +51,7 @@ module.exports = {
         };
     },
     watchLogFile(filename, callback) {
-        let tail = new Tail(directory + '/' + filename, {fromBeginning: true});
+        let tail = new Tail(path.join(directory, filename), {fromBeginning: true});
         
         tail.on('line', line => {
             try {
@@ -70,5 +69,15 @@ module.exports = {
         });
         
         return tail;
+    },
+    async findAllDiscoveries() {
+        let journalFiles = fs.readdirSync(directory).filter(f => f.endsWith('.log'));
+        
+        let journalContents = await Promise.all(journalFiles.map(f => fs.promises.readFile(path.join(directory, f))));
+        
+        return journalContents
+            .flatMap(s => s.toString('utf8').split('\n'))
+            .filter(line => line && line.includes('"WasDiscovered":false') && line.includes('"WasMapped":false'))
+            .map(line => JSON.parse(line));
     },
 };
