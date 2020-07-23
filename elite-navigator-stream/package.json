@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Elite Navigator knowledge stream",
   "keywords": [
-    "Elite Dangerous"
+    "Elite Dangerous",
+    "Navigator"
   ],
   "author": "Ryan Vandersmith <https://rvanasa.github.io>",
   "license": "ISC",

@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import StarSystem from './StarSystem';
 import Item from './Item';
-import {BsBrightnessLow, GiAsteroid, GiVibratingBall, IoMdPlanet} from 'react-icons/all';
+import {BsBrightnessLow, GiAsteroid, GiVibratingBall} from 'react-icons/all';
 import {GalaxyContext} from '../Contexts';
 import Attributes from '../Attributes';
 

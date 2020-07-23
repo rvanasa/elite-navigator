@@ -1,62 +1,85 @@
 import io from 'socket.io-client';
+import {EventEmitter} from 'events';
 
-const defaultHost = '127.0.0.1';
-const defaultPort = 4777;
+const relayAddress = 'https://elite-navigator.herokuapp.com';
 
 let currentConnection = null;
-let pendingAddress = null;
 let pendingPromise = null;
 
 // export function getCurrentConnection() {
 //     return currentConnection;
 // }
 
-export async function tryConnect(address) {
-    address = address.replace('ws://', '');
-    if (!address) {
-        address = defaultHost;
-    }
-    if (!address.includes(':')) {
-        address += ':' + defaultPort;
-    }
-    address = 'ws://' + address;
-    if (address === pendingAddress && pendingPromise) {
-        return pendingPromise;
-    }
-    if (currentConnection) {
+export async function tryConnect(roomName) {
+    roomName = roomName || 'elite-navigator';///
+
+    if(currentConnection) {
         currentConnection.close();
     }
-    currentConnection = null;
-    pendingAddress = address;
-    pendingPromise = new Promise((resolve, reject) => {
-        let connection = io.connect(address);
-        currentConnection = connection;
 
-        connection.on('connect', () => {
+    currentConnection = null;
+    pendingPromise = new Promise((resolve, reject) => {
+
+        let events = new EventEmitter();
+
+        let socket = io.connect(relayAddress);
+        currentConnection = socket;
+
+        let sources = new Set();
+
+        socket.on('connect', () => {
             console.log('Connected');
 
+            socket.emit('join', roomName);////////////////////////////////////////////////////
+
             let visibilityListener = () => {
-                if (connection !== currentConnection) {
+                if(socket !== currentConnection) {
                     document.removeEventListener('visibilitychange', visibilityListener);
                     return;
                 }
-                if (document.visibilityState === 'visible' && !connection.connected) {
-                    connection.connect();
+                if(document.visibilityState === 'visible' && !socket.connected) {
+                    socket.connect();
                 }
             };
             document.addEventListener('visibilitychange', visibilityListener);
 
-            pendingAddress = pendingPromise = null;
-            resolve(connection);
+            // pendingAddress = pendingPromise = null;
+            resolve(events);
         });
 
-        connection.on('error', err => {
-            pendingAddress = pendingPromise = null;
+        socket.on('join', id => {
+            console.log('Joined:', id);
+        });
+
+        socket.on('leave', id => {
+            console.log('Left:', id);
+
+            if(sources.has(id)) {
+                sources.delete(id);
+
+                events.emit('data', {resetPlayer: true});
+            }
+        });
+
+        socket.on('msg', (msg, id) => {
+            console.log('>', id, msg);
+
+            sources.add(id);
+
+            events.emit('data', {msg});
+        });
+
+        socket.on('error', err => {
+            console.error(err);
+
+            // pendingAddress = pendingPromise = null;
             reject(err);
         });
 
-        connection.on('disconnect', () => {
+        socket.on('disconnect', () => {
             console.log('Disconnected');
+
+            events.emit('data', {resetPlayer: true});
         });
     });
     return pendingPromise;

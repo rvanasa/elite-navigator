@@ -1,25 +1,30 @@
 'use strict';
 
 const {watchJournalDirectory, findAllDiscoveries} = require('./service');
-const {v4} = require('internal-ip');
 
-let port = 4777;
+let socket = require('socket.io-client').connect('https://elite-navigator.herokuapp.com');
 
-let app = require('express')();
-let server = require('http').createServer(app);
-let io = require('socket.io')(server);
+let defaultRoom = 'elite-navigator';
 
-server.listen(port, () => {
-    console.log('Listening on port', port);
-    console.log('Connect via localhost or IP address:', v4.sync());
+socket.on('connect', () => {
+    console.log('Joining:', defaultRoom);
+
+    let s = 'Access granted to local network devices.';
+    console.log('-'.repeat(s.length));
+    console.log(s);
+    console.log('-'.repeat(s.length));
+    console.log();
+
+    socket.emit('join', defaultRoom);
 });
 
-io.on('connection', conn => {
-    console.log('Connected');
+socket.on('join', id => {
+    // console.log('Joined:', id);
+    console.log('Device connected');
 
     function sendMessage(message) {
         console.log('Message:', Object.keys(message));
-        conn.emit('message', message);
+        socket.emit('msg', message);
     }
 
     let cleanup = watchJournalDirectory((err, entries) => {
@@ -41,28 +46,15 @@ io.on('connection', conn => {
         })
         .catch(err => console.error(err));
 
-    // let discoveryPromise = null;
 
-    // conn.on('request_discoveries', () => {
-    //     console.log('Requesting discoveries');
-    //
-    //     if(!discoveryPromise) {
-    //         discoveryPromise = findAllDiscoveries();
-    //     }
-    //
-    //     discoveryPromise
-    //         .then(entries => {
-    //             console.log(entries.length, 'discoveries');
-    //             sendMessage({
-    //                 addDiscoveries: entries,
-    //             });
-    //         })
-    //         .catch(err => console.error(err));
-    //
-    // });
-
-    conn.on('disconnect', () => {
-        cleanup();
-        console.log('Disconnected');
+    socket.on('leave', _id => {
+        console.log('Device disconnected');
+        if(_id === id) {
+            cleanup();
+        }
     });
+});
+
+socket.on('disconnect', () => {
+    console.log('Socket disconnected');
 });

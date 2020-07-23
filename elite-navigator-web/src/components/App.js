@@ -6,7 +6,6 @@ import {sentenceCase} from 'change-case';
 import {tryConnect} from '../services/connection-service';
 import {FilterContext, GalaxyContext, SearchContext, SelectContext, SettingsContext} from './Contexts';
 import {findGalaxy} from '../services/galaxy-service';
-import bootbox from 'bootbox';
 import JournalEntry from './item/JournalEntry';
 import {Player} from '../services/player-service';
 import {FiMapPin, FiRadio, FiSearch} from 'react-icons/all';
@@ -17,7 +16,7 @@ import Body from './item/Body';
 import Category from './item/Category';
 import Station from './item/Station';
 
-let messageListener = null;
+let connectionListener = null;
 
 let allowAutoConnect = true;
 
@@ -50,22 +49,24 @@ export default function App() {
 
     function promptConnect() {
         disconnect();
-        bootbox.prompt({
-            title: 'Connect to IP address:',
-            value: connection ? connection.io.uri.replace('ws://', '') : localStorage['websocket'] || 'localhost',
-            callback: address => {
-                if(address) {
-                    localStorage['websocket'] = address || '';
-                    connect(address)
-                        .catch(err => console.error(err));
-                }
-            },
-        });
+        // bootbox.prompt({
+        //     title: 'Connect to IP address:',
+        //     value: connection ? connection.io.uri.replace('ws://', '') : localStorage['websocket'] || 'localhost',
+        //     callback: address => {
+        //         if(address) {
+        //             localStorage['websocket'] = address || '';
+        //             connect(address)
+        //                 .catch(err => console.error(err));
+        //         }
+        //     },
+        // });
+        connect()
+            .catch(err => console.error(err));
     }
 
-    async function connect(address) {
+    async function connect(roomName) {
         setReconnecting(true);
-        let connection = await tryConnect(address);
+        let connection = await tryConnect(roomName);
         setConnection(connection);
         setReconnecting(false);
         // setCurrentTab('nearby');
@@ -85,13 +86,19 @@ export default function App() {
     // console.log(relativeSystem || '-', galaxy, player);///
 
     if(connection) {
-        connection.removeListener('message', messageListener);
-        messageListener = data => {
-            player.update(data);
-            setPlayer(null);////
-            setPlayer(player);
+        if(connectionListener) {
+            connection.removeListener('data', connectionListener);
+        }
+        connectionListener = data => {
+            if(data.msg) {
+                player.update(data.msg);
+            }
+            setPlayer(null);
+            if(!data.resetPlayer) {
+                setPlayer(player);
+            }
         };
-        connection.on('message', messageListener);
+        connection.on('data', connectionListener);
     }
     // useEffect(() => {
     //     if(connection) {
@@ -99,12 +106,11 @@ export default function App() {
     //     }
     // });
 
-    let storedAddress = localStorage['websocket'];
     if(/*storedAddress && */allowAutoConnect) {
         allowAutoConnect = false;
-        let timeout = setTimeout(() => disconnect(), 1000);
-        connect(storedAddress/**/ || 'localhost')
-            .then(() => clearTimeout(timeout))
+        // let timeout = setTimeout(() => disconnect(), 1000);
+        connect()
+            //     .then(() => clearTimeout(timeout))
             .catch(err => console.error(err));
     }
 
@@ -123,10 +129,13 @@ export default function App() {
         );
     }
 
-    currentTab = currentTab || (connection ? 'nearby' : 'settings');///
-
     let playerSystem = player.getCurrentSystem(galaxy);
     let relativeSystem = galaxy.setRelativeSystem(galaxy.getSystem(parseInt(customSystemName) ? null : customSystemName) || playerSystem || 'Sol');
+
+    if(!currentTab) {
+        currentTab = playerSystem ? 'nearby' : 'settings';
+        setCurrentTab(currentTab);
+    }
 
     let hideEvents = ['Music', 'FSSSignalDiscovered'];
 
@@ -197,8 +206,8 @@ export default function App() {
                                     {player.name && (
                                         <h6 className="text-primary float-right mt-1">CMDR {player.name}</h6>
                                     )}
-                                    <h5 className={'text-' + (relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' : connection ?
-                                        playerSystem && relativeSystem.name.toLowerCase() !== playerSystem.name.toLowerCase() ? 'danger' : 'info' : 'light')}>
+                                    <h5 className={'text-' + (relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' :
+                                        playerSystem ? playerSystem && relativeSystem.name.toLowerCase() !== playerSystem.name.toLowerCase() ? 'danger' : 'info' : 'light')}>
                                         {relativeSystem.name}
                                     </h5>
                                 </div>
@@ -270,19 +279,19 @@ export default function App() {
                                                         </>)}/>
                                                     ))}
                                                 </>)}/>
-                                                <Category name="Material traders" detail={() => (
-                                                    galaxy.materialTypes.map((type, i) => (
-                                                        <Category key={i} name={type} detail={() => (
-                                                            <ExpandableList
-                                                                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}
-                                                                size={2}
-                                                                // ignoreSort
-                                                                render={(station, i) => (
-                                                                    <Station key={i} station={station}/>
-                                                                )}/>
-                                                        )}/>
-                                                    ))
-                                                )}/>
+                                                {/*<Category name="Material traders" detail={() => (*/}
+                                                {/*    galaxy.materialTypes.map((type, i) => (*/}
+                                                {/*        <Category key={i} name={type} detail={() => (*/}
+                                                {/*            <ExpandableList*/}
+                                                {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
+                                                {/*                size={2}*/}
+                                                {/*                // ignoreSort*/}
+                                                {/*                render={(station, i) => (*/}
+                                                {/*                    <Station key={i} station={station}/>*/}
+                                                {/*                )}/>*/}
+                                                {/*        )}/>*/}
+                                                {/*    ))*/}
+                                                {/*)}/>*/}
                                                 <Category name="Services" detail={() => (
                                                     ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
                                                         <Category key={i} name={sentenceCase(type)} detail={() => (
@@ -300,7 +309,10 @@ export default function App() {
                                                 <SearchContext.Provider
                                                     value={{isRelevant: v => v === 'Terraformable'}}>
                                                     <ExpandableList
-                                                        items={player.journal.filter(entry => entry.TerraformState && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName))}
+                                                        items={(() => {
+                                                            let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Water world' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
+                                                            return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
+                                                        })()}
                                                         size={10}
                                                         render={(entry, i) => (
                                                             <JournalEntry
@@ -320,24 +332,32 @@ export default function App() {
                                                         Current system:
                                                     </h5>
                                                     <InputGroup size="md" className="my-1" style={{opacity: .8}}>
-                                                        <input type="text"
-                                                               className="form-control"
-                                                               value={customSystemName}
-                                                               placeholder="Choose populated system..."
-                                                               onFocus={e => e.target.select()}
-                                                               onChange={e => doSearch(null) & setCustomSystemName(e.target.value)}/>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            value={customSystemName}
+                                                            placeholder="Choose populated system..."
+                                                            onFocus={e => e.target.select()}
+                                                            onChange={e => doSearch(null) & setCustomSystemName(e.target.value)}/>
                                                     </InputGroup>
                                                     <StarSystem system={relativeSystem}/>
                                                 </div>
-                                                <Button
-                                                    size="lg"
-                                                    variant={'outline-' + (connection ? 'light' : reconnecting ? 'warning' : 'info')}
-                                                    className="w-100 py-2 my-3"
-                                                    style={{opacity: connection && .5}}
-                                                    onClick={() => connection ? disconnect() : promptConnect()}>
-                                                    {connection ? 'Connected' : reconnecting ? 'Connecting...' : 'Connect'}
-                                                </Button>
                                                 {!connection ? (
+                                                    <Button
+                                                        size="lg"
+                                                        variant={'outline-' + (connection ? 'light' : reconnecting ? 'warning' : 'info')}
+                                                        className="w-100 py-2 my-3"
+                                                        style={{opacity: connection && .5}}
+                                                        onClick={() => connection ? disconnect() : promptConnect()}>
+                                                        {/*{connection ? 'Connected' : reconnecting ? 'Connecting...' : 'Connect'}*/}
+                                                        {reconnecting ? 'Connecting...' : 'Connect'}
+                                                    </Button>
+                                                ) : playerSystem && (
+                                                    <h5 className="text-muted mb-2 mt-3 ml-2">
+                                                        Connected to local network
+                                                    </h5>
+                                                )}
+                                                {!playerSystem ? (
                                                     <a href="data/elite-navigator.exe" target="_blank">
                                                         <Button
                                                             variant="outline-light"
@@ -348,13 +368,15 @@ export default function App() {
                                                         </Button>
                                                     </a>
                                                 ) : (<>
+                                                    {/*<br/>*/}
                                                     <Category name="Recent actions" detail={() => (
                                                         <ExpandableList
                                                             items={player.journal.filter(isEntryVisible)}
                                                             size={5}
                                                             render={(entry, i) => (
-                                                                <JournalEntry key={`${entry.timestamp}${i}`}
-                                                                              entry={entry}/>
+                                                                <JournalEntry
+                                                                    key={`${entry.timestamp}${i}`}
+                                                                    entry={entry}/>
                                                             )}/>
                                                     )}/>
                                                     <Category name="First discoveries" detail={() => (<>

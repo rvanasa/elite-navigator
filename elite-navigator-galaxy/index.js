@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./app/compile-galaxy');
+module.exports = require('./src/compile-galaxy');

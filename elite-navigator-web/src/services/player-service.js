@@ -1,3 +1,5 @@
+import {sentenceCase} from 'change-case';
+
 const currentSystemEvents = ['Location', 'FSDJump', 'CarrierJump'];
 
 export class Player {
@@ -33,7 +35,7 @@ export class Player {
     update(data) {
         if(data.journalEntries) {
             data.journalEntries.forEach(entry => {
-                entry.timestamp = new Date(entry.timestamp);
+                entry.timestamp = new Date(entry.timestamp).getTime();
                 let index = this.journal.findIndex(e => e.uid && e.uid === entry.uid);
                 if(index !== -1) {
                     this.journal[index] = entry;
@@ -46,7 +48,7 @@ export class Player {
                     index = this.discoveries.findIndex(e => e.BodyName === entry.BodyName);
                     if(index !== -1) {
                         let other = this.discoveries[index];
-                        if(other.timestamp < entry.timestamp || other.uid < entry.uid) {
+                        if((entry.timestamp === other.timestamp ? entry.uid > other.uid : entry.timestamp > other.timestamp) && (entry.TerraformState || !other.TerraformState)) {
                             this.discoveries[index] = entry;
                         }
                     }
@@ -86,4 +88,49 @@ export class Player {
             }
         }
     }
+}
+
+export function createBodyFromJournalEntry(entry) {
+    return {
+        _type: 'body',
+        id: entry.BodyID,
+        name: entry.Body || entry.BodyName,
+        type: entry.PlanetClass || (entry.StarType && `${entry.StarType + entry.Subclass}-${entry.Luminosity} star`),
+        system: entry.StarSystem,
+        rings: entry.Rings && entry.Rings.map(ring => ({
+            name: ring.Name.replace(entry.BodyName, '').trim(),
+            type: ring.RingClass
+                .replace('eRingClass_', '')
+                .replace('MetalRich', 'Metal Rich')
+                // eslint-disable-next-line no-useless-concat
+                .replace('Metal' + 'ic', 'Metallic'),
+        })),
+        // starDistance: Math.round(entry.DistanceFromArrivalLS),
+        firstDiscovered: !entry.WasDiscovered && !entry.WasMapped,
+        attributes: {
+            'Type': entry.PlanetClass,
+            'Earth masses': entry.MassEM,
+            'Atmosphere': sentenceCase(entry.Atmosphere || ''),
+            'Volcanism': sentenceCase(entry.Volcanism || ''),
+            'Landable': entry.Landable && 'Landable',
+            'State': entry.TerraformState,
+            'First Discovered': entry.firstDiscovered && 'First Discovered',
+        },
+    };
+}
+
+export function createShipFromJournalEntry(entry) {
+    return {
+        _type: 'ship',
+        name: entry.Ship_Localised,
+        pilot: entry.PilotName_Localised || entry.Commander,
+    };
+}
+
+export function createSignalFromJournalEntry(entry) {
+    return {
+        _type: 'signal',
+        name: entry.USSType_Localised,
+        threat: entry.USSThreat,
+    };
 }

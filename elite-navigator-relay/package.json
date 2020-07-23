@@ -1,7 +1,7 @@
 {
-  "name": "elite-navigator-util",
+  "name": "elite-navigator-relay",
   "version": "1.0.0",
-  "description": "Elite Navigator galaxy compiler",
+  "description": "Elite Navigator socket relay",
   "keywords": [
     "Elite Dangerous",
     "Navigator"
@@ -13,7 +13,6 @@
     "start": "node ."
   },
   "dependencies": {
-    "mkdirp": "^1.0.4",
-    "download": "^8.0.0"
+    "socket.io": "^2.3.0"
   }
 }

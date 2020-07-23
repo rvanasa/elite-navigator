@@ -155,9 +155,9 @@ const {gunzipSync} = require('zlib');
         
         let system = systemNameMap[edsmStation.systemName.toLowerCase()];
         if(!system) {
-            throw new Error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
-            // console.warn('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
-            // continue;
+            // throw new Error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
+            console.error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
+            continue;
         }
         let station = galaxy.stations[system.stations.filter(station => galaxy.stations[station].name === edsmStation.name)[0]];
         if(!station) {
@@ -214,4 +214,4 @@ const {gunzipSync} = require('zlib');
     });
     await fs.writeFile('../elite-navigator-web/public/data/galaxy.json', data);
     
-})().catch(err => console.error(err));
+})().catch(err => console.error(err) & process.exit(1));
