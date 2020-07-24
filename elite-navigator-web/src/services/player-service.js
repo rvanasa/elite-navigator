@@ -14,16 +14,16 @@ export class Player {
         this._currentSystem = null;
     }
 
-    getLatest(event) {
+    getMostRecent(event) {
         for(let entry of this.journal) {
-            if(entry.event === event) {
+            if(typeof event === 'string' ? entry.event === event : event(entry)) {
                 return entry;
             }
         }
     }
 
     // getCurrentMaterials() {
-    //     let entry = this.getLatest('Materials');
+    //     let entry = this.getMostRecent('Materials');
     //     return entry && ['Raw', 'Manufactured', 'Encoded']
     //         .flatMap(type => entry[type].map(mat => [type, mat.Name, mat.Name_Localized, mat.Count]));
     // }
@@ -63,7 +63,7 @@ export class Player {
 
             // console.log(this.discoveries.filter(d=>d.TerraformState))///////
 
-            let commanderEntry = this.getLatest('Commander');
+            let commanderEntry = this.getMostRecent('Commander');
             this.name = commanderEntry ? commanderEntry.Name : null;
         }
 
@@ -91,6 +91,7 @@ export class Player {
 }
 
 export function createBodyFromJournalEntry(entry) {
+    let terraformable = entry.TerraformState === 'Terraformable';
     return {
         _type: 'body',
         id: entry.BodyID,
@@ -105,7 +106,8 @@ export function createBodyFromJournalEntry(entry) {
                 // eslint-disable-next-line no-useless-concat
                 .replace('Metal' + 'ic', 'Metallic'),
         })),
-        // starDistance: Math.round(entry.DistanceFromArrivalLS),
+        starDistance: Math.round(entry.DistanceFromArrivalLS),
+        terraformable,
         firstDiscovered: !entry.WasDiscovered && !entry.WasMapped,
         attributes: {
             'Type': entry.PlanetClass,
@@ -113,7 +115,7 @@ export function createBodyFromJournalEntry(entry) {
             'Atmosphere': sentenceCase(entry.Atmosphere || ''),
             'Volcanism': sentenceCase(entry.Volcanism || ''),
             'Landable': entry.Landable && 'Landable',
-            'State': entry.TerraformState,
+            'Terraformable': terraformable,
             'First Discovered': entry.firstDiscovered && 'First Discovered',
         },
     };

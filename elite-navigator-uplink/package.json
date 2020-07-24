@@ -11,8 +11,8 @@
   "license": "ISC",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
-    "build": "pkg index.js --targets win --output ../elite-navigator-web/public/data/elite-navigator"
+    "start": "set OVERLAY_URL=http://localhost:3000?layout=overlay&& electron .",
+    "build": "electron-builder"
   },
   "dependencies": {
     "chokidar": "^3.4.0",
@@ -22,6 +22,21 @@
     "tail": "^2.0.4"
   },
   "devDependencies": {
-    "pkg": "^4.4.9"
+    "electron-builder": "^22.7.0",
+    "electron": "^9.1.1"
+  },
+  "build": {
+    "appId": "rvanasa.EliteNavigator",
+    "artifactName": "${productName}.${ext}",
+    "productName": "Elite Navigator",
+    "files": [
+      "**/*"
+    ],
+    "directories": {
+      "output": "../elite-navigator-web/public/data/elite-navigator"
+    },
+    "win": {
+      "target": "portable"
+    }
   }
 }

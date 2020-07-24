@@ -31,33 +31,29 @@ async function run() {
     eddn.on('error', err => console.error(err));
     eddn.on('entry', entry => {
 
-        if(entry.SignalName_Localised === 'Notable stellar phenomena') {
-            console.log(entry);
+        if(entry.event === 'Scan' && entry.Rings) {
+
+        let systemName = entry.StarSystem;
+        if(!isPopulated(systemName)) {
+            return;
         }
 
-        // if(entry.event === 'Scan' && entry.Rings) {
+        let bodyName = entry.BodyName.replace(systemName, '').trim();
+        let rings = entry.Rings.map(ring => ({
+            name: ring.Name.replace(entry.BodyName, '').trim(),
+            type: ring.RingClass
+                .replace('eRingClass_', '')
+                .replace('MetalRich', 'Metal Rich')
+                .replace('Metal' + 'ic', 'Metallic'),
+        }));
 
-            // let systemName = entry.StarSystem;
-            // if(!isPopulated(systemName)) {
-            //     return;
-            // }
-            //
-            // let bodyName = entry.BodyName.replace(systemName, '').trim();
-            // let rings = entry.Rings.map(ring => ({
-            //     name: ring.Name.replace(entry.BodyName, '').trim(),
-            //     type: ring.RingClass
-            //         .replace('eRingClass_', '')
-            //         .replace('MetalRich', 'Metal Rich')
-            //         .replace('Metal' + 'ic', 'Metallic'),
-            // }));
-            //
-            // console.log(systemName, bodyName, rings);
-            //
-            // (ringMap[entry.StarSystem] || (ringMap[entry.StarSystem] = {}))[bodyName] = {
-            //     distance: Math.round(entry.DistanceFromArrivalLS),
-            //     rings: rings,
-            // };
-        // }
+        console.log(systemName, bodyName, rings);
+
+        (ringMap[entry.StarSystem] || (ringMap[entry.StarSystem] = {}))[bodyName] = {
+            distance: Math.round(entry.DistanceFromArrivalLS),
+            rings: rings,
+        };
+        }
     });
 }
 

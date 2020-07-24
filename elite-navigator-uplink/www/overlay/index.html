@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Elite Navigator :: Overlay</title>
+    <style>
+        html, body, #inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="inner" src="https://rvanasa.github.io/elite-navigator?layout=overlay"></iframe>
+
+    <script>
+        let frame = document.getElementById('inner');
+
+        let {OVERLAY_URL} = window;
+        if(OVERLAY_URL) {
+            console.log('Custom overlay URL:', OVERLAY_URL);
+            frame.src = OVERLAY_URL;
+        }
+    </script>
+</body>
+</html>

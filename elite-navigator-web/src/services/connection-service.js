@@ -64,7 +64,9 @@ export async function tryConnect(roomName) {
         socket.on('msg', (msg, id) => {
             console.log('>', id, msg);
 
-            sources.add(id);
+            if(msg.role === 'uplink') {
+                sources.add(id);
+            }
 
             events.emit('data', {msg});
         });
@@ -80,6 +82,10 @@ export async function tryConnect(roomName) {
             console.log('Disconnected');
 
             events.emit('data', {resetPlayer: true});
+        });
+
+        events.on('msg', msg => {
+            socket.emit('msg', msg);
         });
     });
     return pendingPromise;

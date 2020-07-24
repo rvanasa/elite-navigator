@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import './App.scss';
 import {Button, InputGroup, Tab, Tabs} from 'react-bootstrap';
@@ -7,7 +7,7 @@ import {tryConnect} from '../services/connection-service';
 import {FilterContext, GalaxyContext, SearchContext, SelectContext, SettingsContext} from './Contexts';
 import {findGalaxy} from '../services/galaxy-service';
 import JournalEntry from './item/JournalEntry';
-import {Player} from '../services/player-service';
+import {createBodyFromJournalEntry, Player} from '../services/player-service';
 import {FiMapPin, FiRadio, FiSearch} from 'react-icons/all';
 import SearchResult from './SearchResult';
 import ExpandableList from './ExpandableList';
@@ -15,6 +15,9 @@ import StarSystem from './item/StarSystem';
 import Body from './item/Body';
 import Category from './item/Category';
 import Station from './item/Station';
+import queryString from 'query-string';
+import BodyCompact from './BodyCompact';
+import SettingToggle from './SettingToggle';
 
 let connectionListener = null;
 
@@ -33,6 +36,8 @@ export default function App() {
     let [favorites, setFavorites] = useState([]);
     let [selected, setSelected] = useState(null);
 
+    let {layout} = queryString.parse(window.location.search);
+
     if(!settings) {
         settings = {
             set(changes) {
@@ -45,6 +50,23 @@ export default function App() {
     if(!player) {
         player = new Player();
         setPlayer(player);
+    }
+
+    function sendMessage(msg) {
+        msg = {
+            source: 'webapp',
+            ...msg,
+        };
+        console.log('Sending message:', msg);
+        connection.emit('msg', msg);
+    }
+
+    function transmitSettings(settings) {
+        if(settings.hasOwnProperty('overlay')) {
+            sendMessage({
+                overlay: settings.overlay,
+            });
+        }
     }
 
     function promptConnect() {
@@ -66,8 +88,9 @@ export default function App() {
 
     async function connect(roomName) {
         setReconnecting(true);
-        let connection = await tryConnect(roomName);
+        connection = await tryConnect(roomName);
         setConnection(connection);
+        transmitSettings(settings);
         setReconnecting(false);
         // setCurrentTab('nearby');
         return connection;
@@ -195,6 +218,230 @@ export default function App() {
         setFavorites(favorites.filter(x => x !== item));
     }
 
+    if(layout === 'overlay') {
+        document.body.style.backgroundColor = '#0000';
+    }
+
+    let overlayContent = () => (<>
+        <SearchContext.Provider
+            value={{isRelevant: v => v === 'Terraformable'}}>
+            <ExpandableList
+                items={(() => {
+                    let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
+                    return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
+                })()}
+                size={10}
+                render={(entry, i) => (
+                    // <JournalEntry
+                    //     key={`${entry.timestamp}${i}`}
+                    //     internal
+                    //     entry={entry}/>
+                    <BodyCompact key={i} body={createBodyFromJournalEntry(entry)} player={player}/>
+                )}/>
+        </SearchContext.Provider>
+    </>);
+
+    let mainContent = () => (<>
+        <InputGroup size="lg" className="mb-2">
+            <input type="text"
+                   className="form-control"
+                   value={searchQuery}
+                   placeholder={'Search...'}
+                   ref={elem => searchBarElem = elem}
+                // onFocus={() => setCurrentTab('search')}
+                   onChange={e => doSearch(e.target.value)}/>
+        </InputGroup>
+        <Tabs activeKey={currentTab}
+              onSelect={onSelectTab}>
+            <Tab eventKey="search" title={<FiSearch className="h4 mt-1"/>}>
+                {currentTab === 'search' && (
+                    searchQuery ? (
+                        <ExpandableList
+                            items={searchResults}
+                            size={20}
+                            // ignoreSort
+                            render={(result, i) => (
+                                <SearchResult key={i} result={result}/>
+                            )}/>
+                    ) : (<>
+                        <ExpandableList
+                            items={favorites}
+                            size={10}
+                            // ignoreSort
+                            render={(item, i) => (
+                                <SearchResult key={i} result={item}/>
+                            )}/>
+                        <ExpandableList
+                            items={galaxy.getNearestSystems(() => s => !favorites.includes(s), 80)}
+                            size={10}
+                            // ignoreSort
+                            render={(item, i) => (
+                                <SearchResult key={i} result={item}/>
+                            )}/>
+                    </>)
+                )}
+            </Tab>
+            <Tab eventKey="nearby" title={<FiMapPin className="h4 mt-1"/>}>
+                {currentTab === 'nearby' && (<>
+                    <div className="mt-2">
+                        <Category name="Nearby stations" detail={() => (
+                            <ExpandableList
+                                items={galaxy.getNearestStations()}
+                                size={3}
+                                // ignoreSort
+                                render={(station, i) => (
+                                    <SearchResult key={i} result={station}/>
+                                )}/>
+                        )}/>
+                        <Category name="Pristine rings" detail={() => (<>
+                            {/*<SettingToggle*/}
+                            {/*    setting="allResourceTypes"*/}
+                            {/*    inverted*/}
+                            {/*    label="Pristine"/>*/}
+                            {galaxy.ringTypes.map((type, i) => (
+                                <Category key={i} name={type} detail={() => (<>
+                                    <ExpandableList
+                                        items={galaxy.getNearestRingBodies(type).filter(b => settings.allResourceTypes || b.system.reserveType === 'Pristine')}
+                                        size={2}
+                                        // ignoreSort
+                                        render={(body, i) => (
+                                            <Body key={i} body={body}/>
+                                        )}/>
+                                </>)}/>
+                            ))}
+                        </>)}/>
+                        {/*<Category name="Material traders" detail={() => (*/}
+                        {/*    galaxy.materialTypes.map((type, i) => (*/}
+                        {/*        <Category key={i} name={type} detail={() => (*/}
+                        {/*            <ExpandableList*/}
+                        {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
+                        {/*                size={2}*/}
+                        {/*                // ignoreSort*/}
+                        {/*                render={(station, i) => (*/}
+                        {/*                    <Station key={i} station={station}/>*/}
+                        {/*                )}/>*/}
+                        {/*        )}/>*/}
+                        {/*    ))*/}
+                        {/*)}/>*/}
+                        <Category name="Services" detail={() => (
+                            ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
+                                <Category key={i} name={sentenceCase(type)} detail={() => (
+                                    <ExpandableList
+                                        items={galaxy.getNearestStations(s => s.services.includes(type))}
+                                        size={2}
+                                        // ignoreSort
+                                        render={(station, i) => (
+                                            <Station key={i} station={station}/>
+                                        )}/>
+                                )}/>
+                            ))
+                        )}/>
+                        <br/>
+                        {overlayContent()}
+                    </div>
+                </>)}
+            </Tab>
+            <Tab eventKey="settings" title={<FiRadio className="h4 mt-1"/>}>
+                {currentTab === 'settings' && (<>
+                    <div className="p-2">
+                        <div className="p-2">
+                            <h5 className={'text-' + (customSystemName ? relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' : 'danger' : 'light')}>
+                                Current system:
+                            </h5>
+                            <InputGroup size="md" className="my-1" style={{opacity: .8}}>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={customSystemName}
+                                    placeholder="Choose populated system..."
+                                    onFocus={e => e.target.select()}
+                                    onChange={e => doSearch(null) & setCustomSystemName(e.target.value)}/>
+                            </InputGroup>
+                            <StarSystem system={relativeSystem}/>
+                        </div>
+                        {!connection ? (
+                            <Button
+                                size="lg"
+                                variant={'outline-' + (connection ? 'light' : reconnecting ? 'warning' : 'info')}
+                                className="w-100 py-2 my-3"
+                                style={{opacity: connection && .5}}
+                                onClick={() => connection ? disconnect() : promptConnect()}>
+                                {/*{connection ? 'Connected' : reconnecting ? 'Connecting...' : 'Connect'}*/}
+                                {reconnecting ? 'Connecting...' : 'Connect'}
+                            </Button>
+                        ) : playerSystem && (<div className="ml-2 mt-3">
+                            {/*<h5 className="text-light my-3">*/}
+                            {/*    Connected to local network*/}
+                            {/*</h5>*/}
+                            <SettingToggle
+                                setting="overlay"
+                                label="Exploration overlay"
+                                onToggle={overlay => transmitSettings({...settings, overlay})}/>
+                        </div>)}
+                        {!playerSystem ? (
+                            <a href="data/elite-navigator/Elite Navigator.exe" target="_blank">
+                                <Button
+                                    variant="outline-light"
+                                    className="w-100 py-2 my-2"
+                                    style={{opacity: .7}}
+                                    onClick={() => connect('localhost')}>
+                                    Download location sync
+                                </Button>
+                            </a>
+                        ) : (<>
+                            <br/>
+                            <Category name="Recent actions" detail={() => (
+                                <ExpandableList
+                                    items={player.journal.filter(isEntryVisible)}
+                                    size={5}
+                                    render={(entry, i) => (
+                                        <JournalEntry
+                                            key={`${entry.timestamp}${i}`}
+                                            entry={entry}/>
+                                    )}/>
+                            )}/>
+                            {/*<Category name="First discoveries" detail={() => (<>*/}
+                            {/*    <Category name="Everything" detail={() => (*/}
+                            {/*        <ExpandableList*/}
+                            {/*            items={player.discoveries}*/}
+                            {/*            size={10}*/}
+                            {/*            render={(entry, i) => (*/}
+                            {/*                <JournalEntry*/}
+                            {/*                    key={`${entry.timestamp}${i}`}*/}
+                            {/*                    internal*/}
+                            {/*                    entry={entry}/>*/}
+                            {/*            )}/>*/}
+                            {/*    )}/>*/}
+                            {/*    <Category name="Terraformable" detail={() => (*/}
+                            {/*        <ExpandableList*/}
+                            {/*            items={player.discoveries.filter(entry => entry.TerraformState)}*/}
+                            {/*            size={10}*/}
+                            {/*            render={(entry, i) => (*/}
+                            {/*                <JournalEntry*/}
+                            {/*                    key={`${entry.timestamp}${i}`}*/}
+                            {/*                    internal*/}
+                            {/*                    entry={entry}/>*/}
+                            {/*            )}/>*/}
+                            {/*    )}/>*/}
+                            {/*    <Category name="Earthlike" detail={() => (*/}
+                            {/*        <ExpandableList*/}
+                            {/*            items={player.discoveries.filter(entry => entry.PlanetClass === 'Earthlike body')}*/}
+                            {/*            size={10}*/}
+                            {/*            render={(entry, i) => (*/}
+                            {/*                <JournalEntry*/}
+                            {/*                    key={`${entry.timestamp}${i}`}*/}
+                            {/*                    internal*/}
+                            {/*                    entry={entry}/>*/}
+                            {/*            )}/>*/}
+                            {/*    )}/>*/}
+                            {/*</>)}/>*/}
+                        </>)}
+                    </div>
+                </>)}
+            </Tab>
+        </Tabs>
+    </>);
+
     return (
         <SettingsContext.Provider value={settings}>
             <SelectContext.Provider value={{selected, setSelected, ancestors: []}}>
@@ -203,222 +450,15 @@ export default function App() {
                         <SearchContext.Provider value={{text: searchQuery, isRelevant: isSearchRelevant}}>
                             <div className="p-2">
                                 <div>
-                                    {player.name && (
+                                    {player.name && layout !== 'overlay' && (
                                         <h6 className="text-primary float-right mt-1">CMDR {player.name}</h6>
                                     )}
                                     <h5 className={'text-' + (relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' :
                                         playerSystem ? playerSystem && relativeSystem.name.toLowerCase() !== playerSystem.name.toLowerCase() ? 'danger' : 'info' : 'light')}>
-                                        {relativeSystem.name}
+                                        {layout !== 'overlay' || playerSystem || customSystemName || searchQuery ? relativeSystem.name : <>&nbsp;</>}
                                     </h5>
                                 </div>
-                                <InputGroup size="lg" className="mb-2">
-                                    <input type="text"
-                                           className="form-control"
-                                           value={searchQuery}
-                                           placeholder={'Search...'}
-                                           ref={elem => searchBarElem = elem}
-                                        // onFocus={() => setCurrentTab('search')}
-                                           onChange={e => doSearch(e.target.value)}/>
-                                </InputGroup>
-                                <Tabs activeKey={currentTab}
-                                      onSelect={onSelectTab}>
-                                    <Tab eventKey="search" title={<FiSearch className="h4 mt-1"/>}>
-                                        {currentTab === 'search' && (
-                                            searchQuery ? (
-                                                <ExpandableList
-                                                    items={searchResults}
-                                                    size={20}
-                                                    // ignoreSort
-                                                    render={(result, i) => (
-                                                        <SearchResult key={i} result={result}/>
-                                                    )}/>
-                                            ) : (<>
-                                                <ExpandableList
-                                                    items={favorites}
-                                                    size={10}
-                                                    // ignoreSort
-                                                    render={(item, i) => (
-                                                        <SearchResult key={i} result={item}/>
-                                                    )}/>
-                                                <ExpandableList
-                                                    items={galaxy.getNearestSystems(() => s => !favorites.includes(s), 80)}
-                                                    size={10}
-                                                    // ignoreSort
-                                                    render={(item, i) => (
-                                                        <SearchResult key={i} result={item}/>
-                                                    )}/>
-                                            </>)
-                                        )}
-                                    </Tab>
-                                    <Tab eventKey="nearby" title={<FiMapPin className="h4 mt-1"/>}>
-                                        {currentTab === 'nearby' && (<>
-                                            <div className="mt-2">
-                                                <Category name="Nearby stations" detail={() => (
-                                                    <ExpandableList
-                                                        items={galaxy.getNearestStations()}
-                                                        size={3}
-                                                        // ignoreSort
-                                                        render={(station, i) => (
-                                                            <SearchResult key={i} result={station}/>
-                                                        )}/>
-                                                )}/>
-                                                <Category name="Pristine rings" detail={() => (<>
-                                                    {/*<SettingToggle*/}
-                                                    {/*    setting="allResourceTypes"*/}
-                                                    {/*    inverted*/}
-                                                    {/*    label="Pristine"/>*/}
-                                                    {galaxy.ringTypes.map((type, i) => (
-                                                        <Category key={i} name={type} detail={() => (<>
-                                                            <ExpandableList
-                                                                items={galaxy.getNearestRingBodies(type).filter(b => settings.allResourceTypes || b.system.reserveType === 'Pristine')}
-                                                                size={2}
-                                                                // ignoreSort
-                                                                render={(body, i) => (
-                                                                    <Body key={i} body={body}/>
-                                                                )}/>
-                                                        </>)}/>
-                                                    ))}
-                                                </>)}/>
-                                                {/*<Category name="Material traders" detail={() => (*/}
-                                                {/*    galaxy.materialTypes.map((type, i) => (*/}
-                                                {/*        <Category key={i} name={type} detail={() => (*/}
-                                                {/*            <ExpandableList*/}
-                                                {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
-                                                {/*                size={2}*/}
-                                                {/*                // ignoreSort*/}
-                                                {/*                render={(station, i) => (*/}
-                                                {/*                    <Station key={i} station={station}/>*/}
-                                                {/*                )}/>*/}
-                                                {/*        )}/>*/}
-                                                {/*    ))*/}
-                                                {/*)}/>*/}
-                                                <Category name="Services" detail={() => (
-                                                    ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
-                                                        <Category key={i} name={sentenceCase(type)} detail={() => (
-                                                            <ExpandableList
-                                                                items={galaxy.getNearestStations(s => s.services.includes(type))}
-                                                                size={2}
-                                                                // ignoreSort
-                                                                render={(station, i) => (
-                                                                    <Station key={i} station={station}/>
-                                                                )}/>
-                                                        )}/>
-                                                    ))
-                                                )}/>
-                                                {/*******************/}
-                                                <SearchContext.Provider
-                                                    value={{isRelevant: v => v === 'Terraformable'}}>
-                                                    <ExpandableList
-                                                        items={(() => {
-                                                            let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Water world' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
-                                                            return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
-                                                        })()}
-                                                        size={10}
-                                                        render={(entry, i) => (
-                                                            <JournalEntry
-                                                                key={`${entry.timestamp}${i}`}
-                                                                internal
-                                                                entry={entry}/>
-                                                        )}/>
-                                                </SearchContext.Provider>
-                                            </div>
-                                        </>)}
-                                    </Tab>
-                                    <Tab eventKey="settings" title={<FiRadio className="h4 mt-1"/>}>
-                                        {currentTab === 'settings' && (<>
-                                            <div className="p-2">
-                                                <div className="p-2">
-                                                    <h5 className={'text-' + (customSystemName ? relativeSystem.name.toLowerCase() === customSystemName.toLowerCase() ? 'success' : 'danger' : 'light')}>
-                                                        Current system:
-                                                    </h5>
-                                                    <InputGroup size="md" className="my-1" style={{opacity: .8}}>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            value={customSystemName}
-                                                            placeholder="Choose populated system..."
-                                                            onFocus={e => e.target.select()}
-                                                            onChange={e => doSearch(null) & setCustomSystemName(e.target.value)}/>
-                                                    </InputGroup>
-                                                    <StarSystem system={relativeSystem}/>
-                                                </div>
-                                                {!connection ? (
-                                                    <Button
-                                                        size="lg"
-                                                        variant={'outline-' + (connection ? 'light' : reconnecting ? 'warning' : 'info')}
-                                                        className="w-100 py-2 my-3"
-                                                        style={{opacity: connection && .5}}
-                                                        onClick={() => connection ? disconnect() : promptConnect()}>
-                                                        {/*{connection ? 'Connected' : reconnecting ? 'Connecting...' : 'Connect'}*/}
-                                                        {reconnecting ? 'Connecting...' : 'Connect'}
-                                                    </Button>
-                                                ) : playerSystem && (
-                                                    <h5 className="text-muted mb-2 mt-3 ml-2">
-                                                        Connected to local network
-                                                    </h5>
-                                                )}
-                                                {!playerSystem ? (
-                                                    <a href="data/elite-navigator.exe" target="_blank">
-                                                        <Button
-                                                            variant="outline-light"
-                                                            className="w-100 py-2 my-2"
-                                                            style={{opacity: .7}}
-                                                            onClick={() => connect('localhost')}>
-                                                            Download location sync
-                                                        </Button>
-                                                    </a>
-                                                ) : (<>
-                                                    {/*<br/>*/}
-                                                    <Category name="Recent actions" detail={() => (
-                                                        <ExpandableList
-                                                            items={player.journal.filter(isEntryVisible)}
-                                                            size={5}
-                                                            render={(entry, i) => (
-                                                                <JournalEntry
-                                                                    key={`${entry.timestamp}${i}`}
-                                                                    entry={entry}/>
-                                                            )}/>
-                                                    )}/>
-                                                    <Category name="First discoveries" detail={() => (<>
-                                                        <Category name="Everything" detail={() => (
-                                                            <ExpandableList
-                                                                items={player.discoveries}
-                                                                size={10}
-                                                                render={(entry, i) => (
-                                                                    <JournalEntry
-                                                                        key={`${entry.timestamp}${i}`}
-                                                                        internal
-                                                                        entry={entry}/>
-                                                                )}/>
-                                                        )}/>
-                                                        <Category name="Terraformable" detail={() => (
-                                                            <ExpandableList
-                                                                items={player.discoveries.filter(entry => entry.TerraformState)}
-                                                                size={10}
-                                                                render={(entry, i) => (
-                                                                    <JournalEntry
-                                                                        key={`${entry.timestamp}${i}`}
-                                                                        internal
-                                                                        entry={entry}/>
-                                                                )}/>
-                                                        )}/>
-                                                        <Category name="Earthlike" detail={() => (
-                                                            <ExpandableList
-                                                                items={player.discoveries.filter(entry => entry.PlanetClass === 'Earthlike body')}
-                                                                size={10}
-                                                                render={(entry, i) => (
-                                                                    <JournalEntry
-                                                                        key={`${entry.timestamp}${i}`}
-                                                                        internal
-                                                                        entry={entry}/>
-                                                                )}/>
-                                                        )}/>
-                                                    </>)}/>
-                                                </>)}
-                                            </div>
-                                        </>)}
-                                    </Tab>
-                                </Tabs>
+                                {layout === 'overlay' ? overlayContent() : mainContent()}
                             </div>
                         </SearchContext.Provider>
                     </GalaxyContext.Provider>

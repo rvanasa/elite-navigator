@@ -4,16 +4,17 @@ import {Form} from 'react-bootstrap';
 
 export default function SettingToggle(props) {
     let {setting, label, inverted, onToggle} = props;
-    
+
     let settings = useContext(SettingsContext);
-    
+
     function onClick(e) {
-        settings.set({[setting]: !settings[setting]});
+        let value = !settings[setting];
+        settings.set({[setting]: value});
         if(onToggle) {
-            onToggle(e);
+            onToggle(value);
         }
     }
-    
+
     return (
         <Form>
             <Form.Group className="my-2" onClick={onClick}>
