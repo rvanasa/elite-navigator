@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import './App.scss';
 import {Button, InputGroup, Tab, Tabs} from 'react-bootstrap';
 import {sentenceCase} from 'change-case';
 import {tryConnect} from '../services/connection-service';
 import {FilterContext, GalaxyContext, SearchContext, SelectContext, SettingsContext} from './Contexts';
-import {findGalaxy} from '../services/galaxy-service';
+import {findGalaxy, getDefaultGalaxy} from '../services/galaxy-service';
 import JournalEntry from './item/JournalEntry';
 import {createBodyFromJournalEntry, Player} from '../services/player-service';
 import {FiMapPin, FiRadio, FiSearch} from 'react-icons/all';
@@ -138,18 +138,23 @@ export default function App() {
     }
 
     if(!galaxy) {
-        findGalaxy().then(galaxy => setGalaxy(galaxy));
-        return (
-            <div style={{marginTop: '20vh'}}>
-                <div style={{maxWidth: '960px', animationDuration: '1s'}}>
-                    <h4 className="text-center text-light mb-5 animate-fade-in" style={{animationDuration: '1s'}}>
-                        Loading galaxy data...
-                    </h4>
-                    <img className="d-block mx-auto animate-fade-in" style={{animationDuration: '4s'}}
-                         src="img/favicon.png" alt="Loading..."/>
+        if(layout === 'overlay') {
+            galaxy = getDefaultGalaxy();
+        }
+        else {
+            findGalaxy().then(galaxy => setGalaxy(galaxy));
+            return (
+                <div style={{marginTop: '20vh'}}>
+                    <div style={{maxWidth: '960px', animationDuration: '1s'}}>
+                        <h4 className="text-center text-light mb-5 animate-fade-in" style={{animationDuration: '1s'}}>
+                            Loading galaxy data...
+                        </h4>
+                        <img className="d-block mx-auto animate-fade-in" style={{animationDuration: '4s'}}
+                             src="img/favicon.png" alt="Loading..."/>
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 
     let playerSystem = player.getCurrentSystem(galaxy);

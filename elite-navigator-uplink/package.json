@@ -1,6 +1,6 @@
 {
   "name": "elite-navigator-uplink",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Elite Navigator local uplink",
   "keywords": [
     "Elite Dangerous",
@@ -10,9 +10,14 @@
   "author": "Ryan Vandersmith <https://rvanasa.github.io>",
   "license": "ISC",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rvanasa/elite-navigator.git"
+  },
   "scripts": {
-    "start": "set OVERLAY_URL=http://localhost:3000?layout=overlay&& electron .",
-    "build": "electron-builder"
+    "start": "set OVERLAY_URL=http://localhost:3000?layout=overlay&& electron",
+    "build": "electron-builder --publish never",
+    "deploy": "git diff --exit-code && electron-builder --publish always"
   },
   "dependencies": {
     "chokidar": "^3.4.0",
@@ -22,8 +27,10 @@
     "tail": "^2.0.4"
   },
   "devDependencies": {
+    "dotenv": "^8.2.0",
+    "electron": "^9.1.1",
     "electron-builder": "^22.7.0",
-    "electron": "^9.1.1"
+    "electron-updater": "^4.3.1"
   },
   "build": {
     "appId": "rvanasa.EliteNavigator",
@@ -35,8 +42,8 @@
     "directories": {
       "output": "../elite-navigator-web/public/data/elite-navigator"
     },
-    "win": {
-      "target": "portable"
+    "publish": {
+      "provider": "github"
     }
   }
 }

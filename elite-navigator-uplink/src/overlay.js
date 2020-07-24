@@ -22,7 +22,7 @@ exports.openOverlay = async () => {
                 frame: false,
                 transparent: true,
                 webPreferences: {
-                    preload: path.join(__dirname, '../www/preload.js'),
+                    preload: path.join(__dirname, '../www/overlay/preload.js'),
                 },
             });
 
