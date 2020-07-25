@@ -157,7 +157,8 @@ export default function App() {
     }
 
     if(!currentTab) {
-        currentTab = playerSystem ? 'nearby' : 'settings';
+        // currentTab = playerSystem ? 'nearby' : 'settings';
+        currentTab = 'settings';
         setCurrentTab(currentTab);
     }
 
@@ -282,66 +283,6 @@ export default function App() {
                     </>)
                 )}
             </Tab>
-            <Tab eventKey="nearby" title={<FiMapPin className="h4 mt-1"/>}>
-                {currentTab === 'nearby' && (<>
-                    <div className="mt-2">
-                        <Category name="Nearby stations" detail={() => (
-                            <ExpandableList
-                                items={galaxy.getNearestStations()}
-                                size={3}
-                                // ignoreSort
-                                render={(station, i) => (
-                                    <SearchResult key={i} result={station}/>
-                                )}/>
-                        )}/>
-                        <Category name="Pristine rings" detail={() => (<>
-                            {/*<SettingToggle*/}
-                            {/*    setting="allResourceTypes"*/}
-                            {/*    inverted*/}
-                            {/*    label="Pristine"/>*/}
-                            {galaxy.ringTypes.map((type, i) => (
-                                <Category key={i} name={type} detail={() => (<>
-                                    <ExpandableList
-                                        items={galaxy.getNearestRingBodies(type).filter(b => settings.allResourceTypes || b.system.reserveType === 'Pristine')}
-                                        size={2}
-                                        // ignoreSort
-                                        render={(body, i) => (
-                                            <Body key={i} body={body}/>
-                                        )}/>
-                                </>)}/>
-                            ))}
-                        </>)}/>
-                        {/*<Category name="Material traders" detail={() => (*/}
-                        {/*    galaxy.materialTypes.map((type, i) => (*/}
-                        {/*        <Category key={i} name={type} detail={() => (*/}
-                        {/*            <ExpandableList*/}
-                        {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
-                        {/*                size={2}*/}
-                        {/*                // ignoreSort*/}
-                        {/*                render={(station, i) => (*/}
-                        {/*                    <Station key={i} station={station}/>*/}
-                        {/*                )}/>*/}
-                        {/*        )}/>*/}
-                        {/*    ))*/}
-                        {/*)}/>*/}
-                        <Category name="Services" detail={() => (
-                            ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
-                                <Category key={i} name={sentenceCase(type)} detail={() => (
-                                    <ExpandableList
-                                        items={galaxy.getNearestStations(s => s.services.includes(type))}
-                                        size={2}
-                                        // ignoreSort
-                                        render={(station, i) => (
-                                            <Station key={i} station={station}/>
-                                        )}/>
-                                )}/>
-                            ))
-                        )}/>
-                        <br/>
-                        {overlayContent()}
-                    </div>
-                </>)}
-            </Tab>
             <Tab eventKey="settings" title={<FiRadio className="h4 mt-1"/>}>
                 {currentTab === 'settings' && (<>
                     <div className="p-2">
@@ -438,6 +379,66 @@ export default function App() {
                             {/*    )}/>*/}
                             {/*</>)}/>*/}
                         </>)}
+                    </div>
+                </>)}
+            </Tab>
+            <Tab eventKey="nearby" title={<FiMapPin className="h4 mt-1"/>}>
+                {currentTab === 'nearby' && (<>
+                    <div className="mt-2">
+                        <Category name="Nearby stations" detail={() => (
+                            <ExpandableList
+                                items={galaxy.getNearestStations()}
+                                size={3}
+                                // ignoreSort
+                                render={(station, i) => (
+                                    <SearchResult key={i} result={station}/>
+                                )}/>
+                        )}/>
+                        <Category name="Pristine rings" detail={() => (<>
+                            {/*<SettingToggle*/}
+                            {/*    setting="allResourceTypes"*/}
+                            {/*    inverted*/}
+                            {/*    label="Pristine"/>*/}
+                            {galaxy.ringTypes.map((type, i) => (
+                                <Category key={i} name={type} detail={() => (<>
+                                    <ExpandableList
+                                        items={galaxy.getNearestRingBodies(type).filter(b => settings.allResourceTypes || b.system.reserveType === 'Pristine')}
+                                        size={2}
+                                        // ignoreSort
+                                        render={(body, i) => (
+                                            <Body key={i} body={body}/>
+                                        )}/>
+                                </>)}/>
+                            ))}
+                        </>)}/>
+                        {/*<Category name="Material traders" detail={() => (*/}
+                        {/*    galaxy.materialTypes.map((type, i) => (*/}
+                        {/*        <Category key={i} name={type} detail={() => (*/}
+                        {/*            <ExpandableList*/}
+                        {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
+                        {/*                size={2}*/}
+                        {/*                // ignoreSort*/}
+                        {/*                render={(station, i) => (*/}
+                        {/*                    <Station key={i} station={station}/>*/}
+                        {/*                )}/>*/}
+                        {/*        )}/>*/}
+                        {/*    ))*/}
+                        {/*)}/>*/}
+                        <Category name="Services" detail={() => (
+                            ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
+                                <Category key={i} name={sentenceCase(type)} detail={() => (
+                                    <ExpandableList
+                                        items={galaxy.getNearestStations(s => s.services.includes(type))}
+                                        size={2}
+                                        // ignoreSort
+                                        render={(station, i) => (
+                                            <Station key={i} station={station}/>
+                                        )}/>
+                                )}/>
+                            ))
+                        )}/>
+                        <br/>
+                        {overlayContent()}
                     </div>
                 </>)}
             </Tab>
