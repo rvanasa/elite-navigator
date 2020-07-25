@@ -18,6 +18,7 @@ import Station from './item/Station';
 import queryString from 'query-string';
 import BodyCompact from './BodyCompact';
 import SettingToggle from './SettingToggle';
+import LoadingMain from './LoadingMain';
 
 let connectionListener = null;
 
@@ -52,21 +53,17 @@ export default function App() {
         setPlayer(player);
     }
 
-    function sendMessage(msg) {
-        msg = {
-            source: 'webapp',
-            ...msg,
-        };
+    function sendMessage(msg, role) {
         console.log('Sending message:', msg);
-        connection.emit('msg', msg);
+        connection.emit('msg', msg, role);
     }
 
     function transmitSettings(settings) {
-        if(settings.hasOwnProperty('overlay')) {
-            sendMessage({
-                overlay: settings.overlay,
-            });
-        }
+        // if(settings.hasOwnProperty('overlay')) {
+        sendMessage({
+            overlay: settings.overlay,
+        }, 'uplink');
+        // }
     }
 
     function promptConnect() {
@@ -90,7 +87,7 @@ export default function App() {
         setReconnecting(true);
         connection = await tryConnect(roomName);
         setConnection(connection);
-        transmitSettings(settings);
+        transmitSettings(settings);//////////
         setReconnecting(false);
         // setCurrentTab('nearby');
         return connection;
@@ -110,18 +107,18 @@ export default function App() {
 
     if(connection) {
         if(connectionListener) {
-            connection.removeListener('data', connectionListener);
+            connection.removeListener('msg', connectionListener);
         }
-        connectionListener = data => {
-            if(data.msg) {
-                player.update(data.msg);
+        connectionListener = (msg, id, role) => {
+            if(role === 'uplink') {
+                player.update(msg);
             }
             setPlayer(null);
-            if(!data.resetPlayer) {
+            if(!msg.resetPlayer) {
                 setPlayer(player);
             }
         };
-        connection.on('data', connectionListener);
+        connection.on('msg', connectionListener);
     }
     // useEffect(() => {
     //     if(connection) {
@@ -145,21 +142,19 @@ export default function App() {
         else {
             findGalaxy().then(galaxy => setGalaxy(galaxy));
             return (
-                <div style={{marginTop: '20vh'}}>
-                    <div style={{maxWidth: '960px', animationDuration: '1s'}}>
-                        <h4 className="text-center text-light mb-5 animate-fade-in" style={{animationDuration: '1s'}}>
-                            Loading galaxy data...
-                        </h4>
-                        <img className="d-block mx-auto animate-fade-in" style={{animationDuration: '4s'}}
-                             src="img/favicon.png" alt="Loading..."/>
-                    </div>
-                </div>
+                <LoadingMain text="Loading galaxy data..."/>
             );
         }
     }
 
     let playerSystem = player.getCurrentSystem(galaxy);
     let relativeSystem = galaxy.setRelativeSystem(galaxy.getSystem(parseInt(customSystemName) ? null : customSystemName) || playerSystem || 'Sol');
+
+    if(layout === 'overlay' && !relativeSystem) {
+        return (
+            <LoadingMain text="Loading player data..."/>
+        );
+    }
 
     if(!currentTab) {
         currentTab = playerSystem ? 'nearby' : 'settings';

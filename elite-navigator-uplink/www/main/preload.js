@@ -1,6 +1,8 @@
-const {shell, ipcRenderer} = require('electron');
+const {ipcRenderer} = require('electron');
 
-window.openExternal = async (url) => {
-    return shell.openExternal(url);
+window.handleClick = async () => {
+    // return shell.openExternal(url);
+
+    // ipcRenderer.send('minimize-to-tray');
 };
 

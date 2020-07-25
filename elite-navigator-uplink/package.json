@@ -15,7 +15,7 @@
     "url": "https://github.com/rvanasa/elite-navigator.git"
   },
   "scripts": {
-    "start": "set OVERLAY_URL=http://localhost:3000?layout=overlay&& electron",
+    "start": "set OVERLAY_URL=http://localhost:3000?layout=overlay&& electron .",
     "build": "electron-builder --publish never",
     "deploy": "git diff --exit-code && electron-builder --publish always"
   },

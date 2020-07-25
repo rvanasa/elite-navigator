@@ -30,7 +30,7 @@ export async function tryConnect(roomName) {
         socket.on('connect', () => {
             console.log('Connected');
 
-            socket.emit('join', roomName);////////////////////////////////////////////////////
+            socket.emit('join', roomName, 'webapp');
 
             let visibilityListener = () => {
                 if(socket !== currentConnection) {
@@ -47,8 +47,12 @@ export async function tryConnect(roomName) {
             resolve(events);
         });
 
-        socket.on('join', id => {
-            console.log('Joined:', id);
+        socket.on('join', (id, role) => {
+            console.log('Joined:', id, ':', role);
+
+            if(role === 'uplink') {
+                sources.add(id);
+            }
         });
 
         socket.on('leave', id => {
@@ -57,18 +61,16 @@ export async function tryConnect(roomName) {
             if(sources.has(id)) {
                 sources.delete(id);
 
-                events.emit('data', {resetPlayer: true});
+                if(!sources.size) {
+                    events.emit('data', {resetPlayer: true});
+                }
             }
         });
 
-        socket.on('msg', (msg, id) => {
-            console.log('>', id, msg);
+        socket.on('msg', (msg, id, role) => {
+            console.log('>', id, msg, role);
 
-            if(msg.role === 'uplink') {
-                sources.add(id);
-            }
-
-            events.emit('data', {msg});
+            events.emit('msg', msg, id, role);
         });
 
         socket.on('error', err => {
@@ -84,8 +86,8 @@ export async function tryConnect(roomName) {
             events.emit('data', {resetPlayer: true});
         });
 
-        events.on('msg', msg => {
-            socket.emit('msg', msg);
+        events.on('msg', (...args) => {
+            socket.emit('msg', ...args);
         });
     });
     return pendingPromise;
