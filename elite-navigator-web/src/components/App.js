@@ -380,7 +380,7 @@ export default function App() {
                                 onToggle={overlay => transmitSettings({...settings, overlay})}/>
                         </div>)}
                         {!playerSystem ? (
-                            <a href="https://github.com/rvanasa/elite-navigator/releases/latest"
+                            <a href="https://github.com/rvanasa/elite-navigator/releases"
                                target="_blank" rel="noopener noreferrer">
                                 <Button
                                     variant="outline-light"
