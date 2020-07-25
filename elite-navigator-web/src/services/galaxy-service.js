@@ -347,9 +347,10 @@ export async function loadGalaxy() {
 
 let currentGalaxyPromise = null;
 
-export async function getDefaultGalaxy() {
-    let galaxy = new Galaxy({});
-    return galaxy;
+let defaultGalaxy = new Galaxy({});
+
+export function getDefaultGalaxy() {
+    return defaultGalaxy;
 }
 
 

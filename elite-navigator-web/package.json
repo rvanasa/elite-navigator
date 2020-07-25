@@ -2,6 +2,29 @@
   "name": "elite-navigator-web",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "deploy": "util\\deploy.bat",
+    "deploy-static": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
+    "test": "react-app-rewired test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -28,28 +51,5 @@
     "react-swipeable": "^5.5.1",
     "socket.io-client": "^2.3.0",
     "query-string": "^6.13.1"
-  },
-  "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "deploy": "util\\deploy.bat",
-    "deploy-static": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
-    "test": "react-app-rewired test --env=jsdom",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
