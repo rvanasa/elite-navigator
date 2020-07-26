@@ -13,13 +13,13 @@ overlayEvents.on('close', () => closeOverlay().catch(err => overlayEvents.emit('
 exports.overlayEvents = overlayEvents;
 
 exports.openOverlay = async () => {
-    overlayEvents.emit('opening');
     active = true;
     if(currentPromise) {
         let win = await currentPromise;
         win.show();
         return win;
     }
+    overlayEvents.emit('opening');
     currentPromise = Promise.resolve().then(async () => {
         await app.whenReady();
 
@@ -61,12 +61,15 @@ exports.openOverlay = async () => {
 };
 
 exports.closeOverlay = async () => {
-    overlayEvents.emit('closing');
+    if(!active) {
+        return;
+    }
     active = false;
+    overlayEvents.emit('closing');
     if(currentPromise) {
-        let p = currentPromise;
-        currentPromise = null;
-        let win = await p;
+        // let p = currentPromise;
+        // currentPromise = null;
+        let win = await currentPromise;
         // win.close();
         win.hide();
         overlayEvents.emit('closed');

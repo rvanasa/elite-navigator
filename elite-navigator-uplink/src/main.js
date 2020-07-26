@@ -26,7 +26,8 @@ exports.startMainWindow = async () => {
 
     // await autoUpdater.checkForUpdatesAndNotify();
 
-    // autoUpdater.down
+    autoUpdater.checkForUpdatesAndNotify()
+        .catch(console.error);
 
     autoUpdater.on('update-downloaded', () => {
         autoUpdater.quitAndInstall(true, true);

@@ -48,23 +48,22 @@ socket.on('join', (id, role) => {
         //     })
         //     .catch(err => console.error(err));
 
-        overlayEvents.on('opened', notifyOverlay);
-        overlayEvents.on('closed', notifyOverlay);
-
         function notifyOverlay() {
             let overlay = isOverlayActive();
             sendMessage({overlay}, 'webapp');
         }
 
         notifyOverlay();
+        overlayEvents.on('opened', notifyOverlay);
+        overlayEvents.on('closed', notifyOverlay);
 
         socket.on('leave', _id => {
             console.log('Device disconnected:', role);
             if(_id === id) {
+                overlayEvents.off('opened', notifyOverlay);
+                overlayEvents.off('closed', notifyOverlay);
                 cleanup();
             }
-            overlayEvents.off('opened', notifyOverlay);
-            overlayEvents.off('closed', notifyOverlay);
         });
     }
 });
