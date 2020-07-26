@@ -273,6 +273,7 @@ function getStationAttributes() {
         'Type': this.Type,
         'Economy': this.economies.join(', '),
         'Services': this.services.join(', '),
+        'Large landing pads': this.padSize === 'L' && 'Large landing pads',
     };
 }
 

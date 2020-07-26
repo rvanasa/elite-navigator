@@ -117,6 +117,7 @@ const {gunzipSync} = require('zlib');
             system: station.system_id,
             ships: station.selling_ships.map(s => s.toLowerCase()),
             modules: station.selling_modules,
+            padSize: station.max_landing_pad_size,
             starDistance: station.distance_to_star,
             planetary: station.is_planetary,
             economies: station.economies,

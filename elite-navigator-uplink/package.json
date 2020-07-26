@@ -36,7 +36,8 @@
     "artifactName": "${productName}.${ext}",
     "productName": "Elite Navigator",
     "files": [
-      "**/*"
+      "www/**/*",
+      "icon.png"
     ],
     "directories": {
       "output": "build/"
