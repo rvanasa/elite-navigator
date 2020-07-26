@@ -1,13 +1,11 @@
 'use strict';
 
-const {openOverlay, closeOverlay, isOverlayActive} = require('./overlay');
+const {overlayEvents, openOverlay, closeOverlay, isOverlayActive} = require('./overlay');
 const {watchJournalDirectory, findAllDiscoveries} = require('./service');
 
 let socket = require('socket.io-client').connect('https://elite-navigator.herokuapp.com');
 
 let defaultRoom = 'elite-navigator';
-
-let cache = [];
 
 socket.on('connect', () => {
     console.log('Joining:', defaultRoom);
@@ -27,8 +25,8 @@ socket.on('join', (id, role) => {
 
     if(role === 'webapp') {
         function sendMessage(msg) {
-            console.log('Message:', Object.keys(msg), role);
             socket.emit('to', id, msg);
+            console.log('Sent:', Object.keys(msg), role);
         }
 
         let cleanup = watchJournalDirectory((err, entries) => {
@@ -50,11 +48,23 @@ socket.on('join', (id, role) => {
         //     })
         //     .catch(err => console.error(err));
 
+        overlayEvents.on('opened', notifyOverlay);
+        overlayEvents.on('closed', notifyOverlay);
+
+        function notifyOverlay() {
+            let overlay = isOverlayActive();
+            sendMessage({overlay}, 'webapp');
+        }
+
+        notifyOverlay();
+
         socket.on('leave', _id => {
             console.log('Device disconnected:', role);
             if(_id === id) {
                 cleanup();
             }
+            overlayEvents.off('opened', notifyOverlay);
+            overlayEvents.off('closed', notifyOverlay);
         });
     }
 });

@@ -1,4 +1,5 @@
 const path = require('path');
+const {overlayEvents, isOverlayActive, openOverlay, closeOverlay} = require('./overlay');
 const {BrowserWindow, Tray, Menu, app, ipcMain, shell} = require('electron');
 const {autoUpdater} = require('electron-updater');
 
@@ -37,11 +38,20 @@ exports.startMainWindow = async () => {
     //
     // }
 
+    let toggleOverlayItem;
+
     tray = new Tray(path.join(__dirname, '../icon.png'));
-    let contextMenu = Menu.buildFromTemplate([{
+    let menu = Menu.buildFromTemplate([{
         label: 'Open in browser',
         click() {
             shell.openExternal('https://rvanasa.github.io/elite-navigator');
+        },
+    }, toggleOverlayItem = {
+        type: 'checkbox',
+        label: 'Toggle overlay',
+        checked: isOverlayActive(),
+        click() {
+            (isOverlayActive() ? closeOverlay() : openOverlay()).catch(console.error);
         },
     }, {
         label: 'Exit',
@@ -49,13 +59,21 @@ exports.startMainWindow = async () => {
             app.quit();
         },
     }]);
-    tray.setContextMenu(contextMenu);
+    tray.setContextMenu(menu);
     tray.setTitle('Elite Navigator');
     tray.setToolTip('Elite Navigator');
 
     tray.on('click', () => {
-        tray.popUpContextMenu(contextMenu);
+        tray.popUpContextMenu(menu);
     });
+
+    function onOverlayChanging(active) {
+        toggleOverlayItem.checked = active;
+        tray.setContextMenu(menu);
+    }
+
+    overlayEvents.on('opening', () => onOverlayChanging(true));
+    overlayEvents.on('closing', () => onOverlayChanging(false));
 
     // ipcMain.on('minimize-to-tray', () => {
     //     win.hide();

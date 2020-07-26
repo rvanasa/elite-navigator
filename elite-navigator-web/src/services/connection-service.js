@@ -11,7 +11,7 @@ let pendingPromise = null;
 // }
 
 export async function tryConnect(roomName) {
-    roomName = roomName || 'elite-navigator';///
+    roomName = roomName || 'elite-navigator';
 
     if(currentConnection) {
         currentConnection.close();
@@ -43,12 +43,13 @@ export async function tryConnect(roomName) {
             };
             document.addEventListener('visibilitychange', visibilityListener);
 
-            // pendingAddress = pendingPromise = null;
             resolve(events);
         });
 
         socket.on('join', (id, role) => {
             console.log('Joined:', id, ':', role);
+
+            events.emit('msg', {joinedAsRole: role},id);
 
             if(role === 'uplink') {
                 sources.add(id);
@@ -62,13 +63,13 @@ export async function tryConnect(roomName) {
                 sources.delete(id);
 
                 if(!sources.size) {
-                    events.emit('data', {resetPlayer: true});
+                    events.emit('msg', {resetPlayer: true});
                 }
             }
         });
 
         socket.on('msg', (msg, id, role) => {
-            console.log('>', id, msg, role);
+            console.log('Received:', id, msg, role);
 
             events.emit('msg', msg, id, role);
         });
@@ -83,11 +84,11 @@ export async function tryConnect(roomName) {
         socket.on('disconnect', () => {
             console.log('Disconnected');
 
-            events.emit('data', {resetPlayer: true});
+            events.emit('msg', {resetPlayer: true});
         });
 
-        events.on('msg', (...args) => {
-            socket.emit('msg', ...args);
+        events.on('msg', (msg, id, role) => {
+            socket.emit('msg', msg, id, role);
         });
     });
     return pendingPromise;

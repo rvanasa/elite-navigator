@@ -54,16 +54,19 @@ export default function App() {
     }
 
     function sendMessage(msg, role) {
-        console.log('Sending message:', msg);
+        console.log('Sending message:', msg, role);
         connection.emit('msg', msg, role);
     }
 
     function transmitSettings(settings) {
-        // if(settings.hasOwnProperty('overlay')) {
-        sendMessage({
-            overlay: settings.overlay,
-        }, 'uplink');
-        // }
+        if(layout === 'overlay') {
+            return;
+        }
+        if(settings.hasOwnProperty('overlay')) {
+            sendMessage({
+                overlay: settings.overlay || null,
+            }, 'uplink');
+        }
     }
 
     function promptConnect() {
@@ -87,9 +90,7 @@ export default function App() {
         setReconnecting(true);
         connection = await tryConnect(roomName);
         setConnection(connection);
-        transmitSettings(settings);//////////
         setReconnecting(false);
-        // setCurrentTab('nearby');
         return connection;
     }
 
@@ -97,24 +98,27 @@ export default function App() {
         if(connection) {
             connection.close();
         }
-        // localStorage['websocket'] = '';
         setConnection(null);
         setReconnecting(false);
         setPlayer(null);
     }
-
-    // console.log(relativeSystem || '-', galaxy, player);///
 
     if(connection) {
         if(connectionListener) {
             connection.removeListener('msg', connectionListener);
         }
         connectionListener = (msg, id, role) => {
+            if(!role && msg.joinedAsRole === 'uplink') {
+                transmitSettings(settings);
+            }
             if(role === 'uplink') {
+                if(msg.overlay) {
+                    setSettings({...settings, overlay: msg.overlay});
+                }
                 player.update(msg);
             }
             setPlayer(null);
-            if(!msg.resetPlayer) {
+            if(role || !msg.resetPlayer) {
                 setPlayer(player);
             }
         };
