@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {GalaxyContext} from './Contexts';
+import {GalaxyContext} from '../Contexts';
 import classNames from 'classnames';
 
 export default function Body(props) {
@@ -19,6 +19,8 @@ export default function Body(props) {
     let systemName = typeof body.system === 'string' ? body.system : (galaxy.getSystem(body.system) || {}).name;
 
     let playerMapped = player && player.getMostRecent(entry => entry.event === 'SAAScanComplete' && entry.BodyName === body.name);
+
+    let signalEntry = player && player.getMostRecent(entry => entry.event === 'SAASignalsFound' && entry.BodyName === body.name);
 
     return (
         // <Item
@@ -45,13 +47,18 @@ export default function Body(props) {
         //     )}
         // </Item>
         <div className={classNames('d-flex py-2', playerMapped && 'text-success')}
-             style={{background: 'black', opacity: playerMapped && .6}}>
+             style={{background: 'black', opacity: playerMapped && !signalEntry && .6}}>
             <div className="px-3" style={{minWidth: '60px'}}>
                 <h4 className="mb-0">{body.name.replace(systemName, '').trim()}</h4>
             </div>
             <div>
                 <div style={{marginTop: '4px'}}>{body.type}</div>
                 {/*<Attributes attributes={body.attributes}/>*/}
+                {signalEntry && signalEntry.Signals.map((signal, i) => (
+                    <div key={i} className="text-warning">
+                        {signal.Type_Localised}{signal.Count && ' x' + signal.Count}
+                    </div>
+                ))}
             </div>
         </div>
     );

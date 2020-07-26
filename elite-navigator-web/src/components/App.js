@@ -16,7 +16,7 @@ import Body from './item/Body';
 import Category from './item/Category';
 import Station from './item/Station';
 import queryString from 'query-string';
-import BodyCompact from './BodyCompact';
+import BodyCompact from './compact/BodyCompact';
 import SettingToggle from './SettingToggle';
 import LoadingMain from './LoadingMain';
 
@@ -228,24 +228,32 @@ export default function App() {
         document.body.style.backgroundColor = '#0000';
     }
 
-    let overlayContent = () => (<>
-        <SearchContext.Provider
-            value={{isRelevant: v => v === 'Terraformable'}}>
-            <ExpandableList
-                items={(() => {
-                    let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
-                    return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
-                })()}
-                size={10}
-                render={(entry, i) => (
-                    // <JournalEntry
-                    //     key={`${entry.timestamp}${i}`}
-                    //     internal
-                    //     entry={entry}/>
-                    <BodyCompact key={i} body={createBodyFromJournalEntry(entry)} player={player}/>
-                )}/>
-        </SearchContext.Provider>
-    </>);
+    let overlayContent = () => {
+        let starEntries = player.journal
+            .filter(e => e.event === 'Scan' && e.StarSystem === relativeSystem.name && e.StarType)
+            .reverse();
+        return (<>
+            <h6 className="text-info" style={{opacity: .5}}>
+                {starEntries.map(e => e.StarType + e.Subclass + ' ' + e.Luminosity).join(', ')}
+            </h6>
+            {/*<SearchContext.Provider*/}
+            {/*    value={{isRelevant: v => v === 'Terraformable'}}>*/}
+                <ExpandableList
+                    items={(() => {
+                        let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
+                        return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
+                    })()}
+                    size={100}
+                    render={(entry, i) => (
+                        // <JournalEntry
+                        //     key={`${entry.timestamp}${i}`}
+                        //     internal
+                        //     entry={entry}/>
+                        <BodyCompact key={i} body={createBodyFromJournalEntry(entry)} player={player}/>
+                    )}/>
+            {/*</SearchContext.Provider>*/}
+        </>);
+    };
 
     let mainContent = () => (<>
         <InputGroup size="lg" className="mb-2">
