@@ -46,13 +46,18 @@ export default function Body(props) {
         //         <StarSystem system={system}/>
         //     )}
         // </Item>
-        <div className={classNames('d-flex py-2', playerMapped && 'text-success')}
+        <div className={classNames('d-flex py-2', playerMapped ? 'text-success' : body.landable && 'text-warning')}
              style={{background: 'black', opacity: playerMapped && !signalEntry && .6}}>
             <div className="px-3" style={{minWidth: '60px'}}>
                 <h4 className="mb-0">{body.name.replace(systemName, '').trim()}</h4>
             </div>
             <div>
                 <div style={{marginTop: '4px'}}>{body.type}</div>
+                {body.landable && (
+                    <div className="text-muted">
+                        {Math.round(body.gravity * 10) / 10} G
+                    </div>
+                )}
                 {/*<Attributes attributes={body.attributes}/>*/}
                 {signalEntry && signalEntry.Signals.map((signal, i) => (
                     <div key={i} className="text-warning">

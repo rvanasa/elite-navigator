@@ -118,7 +118,7 @@ export default function App() {
                 player.update(msg);
             }
             setPlayer(null);
-            if(role || !msg.resetPlayer) {
+            if(role || !msg.uplinkDisconnected) {
                 setPlayer(player);
             }
         };

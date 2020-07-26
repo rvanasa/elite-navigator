@@ -63,7 +63,7 @@ export async function tryConnect(roomName) {
                 sources.delete(id);
 
                 if(!sources.size) {
-                    events.emit('msg', {resetPlayer: true});
+                    events.emit('msg', {uplinkDisconnected: true});
                 }
             }
         });
@@ -84,7 +84,7 @@ export async function tryConnect(roomName) {
         socket.on('disconnect', () => {
             console.log('Disconnected');
 
-            events.emit('msg', {resetPlayer: true});
+            events.emit('msg', {uplinkDisconnected: true});
         });
 
         events.on('msg', (msg, id, role) => {

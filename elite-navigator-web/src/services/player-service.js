@@ -108,6 +108,8 @@ export function createBodyFromJournalEntry(entry) {
         })),
         starDistance: Math.round(entry.DistanceFromArrivalLS),
         terraformable,
+        landable: entry.Landable,
+        gravity: entry.SurfaceGravity / 9.81,
         firstDiscovered: !entry.WasDiscovered && !entry.WasMapped,
         attributes: {
             'Type': entry.PlanetClass,
