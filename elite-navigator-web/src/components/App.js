@@ -450,8 +450,8 @@ export default function App() {
                                 )}/>
                             ))
                         )}/>
-                        <br/>
-                        {overlayContent()}
+                        {/*<br/>*/}
+                        {/*{overlayContent()}*/}
                     </div>
                 </>)}
             </Tab>
