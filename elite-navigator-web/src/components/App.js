@@ -19,6 +19,7 @@ import queryString from 'query-string';
 import BodyCompact from './compact/BodyCompact';
 import SettingToggle from './SettingToggle';
 import LoadingMain from './LoadingMain';
+import MainCategory from './MainCategory';
 
 let connectionListener = null;
 
@@ -238,19 +239,19 @@ export default function App() {
             </h6>
             {/*<SearchContext.Provider*/}
             {/*    value={{isRelevant: v => v === 'Terraformable'}}>*/}
-                <ExpandableList
-                    items={(() => {
-                        let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
-                        return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
-                    })()}
-                    size={100}
-                    render={(entry, i) => (
-                        // <JournalEntry
-                        //     key={`${entry.timestamp}${i}`}
-                        //     internal
-                        //     entry={entry}/>
-                        <BodyCompact key={i} body={createBodyFromJournalEntry(entry)} player={player}/>
-                    )}/>
+            <ExpandableList
+                items={(() => {
+                    let items = player.journal.filter(entry => (entry.TerraformState || entry.PlanetClass === 'Earthlike body' || entry.PlanetClass === 'Ammonia world') && entry.StarSystem === relativeSystem.name).sort((a, b) => a.BodyName.localeCompare(b.BodyName));
+                    return items.filter((a, i) => items.slice(i + 1).every(b => a.BodyName !== b.BodyName));
+                })()}
+                size={100}
+                render={(entry, i) => (
+                    // <JournalEntry
+                    //     key={`${entry.timestamp}${i}`}
+                    //     internal
+                    //     entry={entry}/>
+                    <BodyCompact key={i} body={createBodyFromJournalEntry(entry)} player={player}/>
+                )}/>
             {/*</SearchContext.Provider>*/}
         </>);
     };
@@ -425,7 +426,7 @@ export default function App() {
                         </>)}/>
                         <Category name="Material traders" detail={() => (
                             galaxy.materialTypes.map((type, i) => (
-                                <Category key={i} name={type} detail={() => (
+                                <MainCategory key={i} name={type}>
                                     <ExpandableList
                                         items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}
                                         size={2}
@@ -433,7 +434,7 @@ export default function App() {
                                         render={(station, i) => (
                                             <Station key={i} station={station}/>
                                         )}/>
-                                )}/>
+                                </MainCategory>
                             ))
                         )}/>
                         <Category name="Services" detail={() => (
