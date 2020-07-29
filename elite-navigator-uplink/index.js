@@ -8,6 +8,6 @@ if(app.requestSingleInstanceLock()) {
     startMainWindow()
         .catch(err => console.error(err) & process.exit(1));
 }
-else{
+else {
     app.quit();
 }

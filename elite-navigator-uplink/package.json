@@ -20,16 +20,16 @@
     "deploy": "git diff --exit-code && electron-builder --publish always"
   },
   "dependencies": {
-    "chokidar": "^3.4.0",
+    "chokidar": "^3.4.1",
     "debounce": "^1.2.0",
+    "electron-updater": "^4.3.4",
     "socket.io-client": "^2.3.0",
     "string-hash": "^1.1.3",
-    "tail": "^2.0.4",
-    "electron-updater": "^4.3.1"
+    "tail": "^2.0.4"
   },
   "devDependencies": {
-    "electron": "^9.1.1",
-    "electron-builder": "^22.7.0"
+    "electron": "^9.1.2",
+    "electron-builder": "^22.8.0"
   },
   "build": {
     "appId": "rvanasa.EliteNavigator",
