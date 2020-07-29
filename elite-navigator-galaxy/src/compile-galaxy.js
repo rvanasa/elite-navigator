@@ -5,9 +5,20 @@ const download = require('download');
 const mkdirp = require('mkdirp');
 const {gunzipSync} = require('zlib');
 
+function getMaterialTraderType(station) {
+    let [primary, secondary] = station.economies;
+    if(primary === 'High Tech' || primary === 'Military') return 'Encoded';
+    if(primary === 'Extraction' || primary === 'Refinery') return 'Raw';
+    if(primary === 'Industrial') return 'Manufactured';
+    if(secondary === 'High Tech' || secondary === 'Military') return 'Encoded';
+    if(secondary === 'Extraction' || secondary === 'Refinery') return 'Raw';
+    if(secondary === 'Industrial') return 'Manufactured';
+    return '?';
+}
+
 (async () => {
     mkdirp.sync('./data');
-    
+
     console.log('Retrieve data');
     await Promise.all([
         ['https://eddb.io/archive/v6/modules.json', 'data/eddb_modules.json'],
@@ -20,17 +31,17 @@ const {gunzipSync} = require('zlib');
         console.log('->', path);
         await fs.writeFile(path, result);
     }));
-    
+
     console.log('Unpack data');
     await fs.writeFile('data/edsm_stations.json', gunzipSync(await fs.readFile('data/edsm_stations.json.gz')));
-    
+
     console.log('Load data');
     let modules = await require('../data/eddb_modules.json');
     let systems = await require('../data/eddb_systems_populated.json');
     let stations = await require('../data/eddb_stations.json');
     let edsmStations = await require('../data/edsm_stations.json');
-    let rings = await require('../data/eddn_system_body_rings.json');
-    
+    let streamData = await require('../data/eddn_stream.json');
+
     let galaxy = {
         ships: {},
         modules: {},
@@ -38,9 +49,9 @@ const {gunzipSync} = require('zlib');
         stations: {},
         bodies: {},
     };
-    
+
     let systemNameMap = {};
-    
+
     console.log('Modules');
     for(let module of modules) {
         module = {
@@ -55,9 +66,9 @@ const {gunzipSync} = require('zlib');
             category: module.category,
             mode: module.weapon_mode,
         };
-        
+
         galaxy.modules[module.id] = module;
-        
+
         if(module.ship) {
             let ship = galaxy.ships[module.ship.toLowerCase()];
             if(!ship) {
@@ -69,7 +80,7 @@ const {gunzipSync} = require('zlib');
             }
         }
     }
-    
+
     console.log('Systems');
     for(let system of systems) {
         system = {
@@ -93,16 +104,16 @@ const {gunzipSync} = require('zlib');
             stations: [],
             bodies: [],
         };
-        
+
         galaxy.systems[system.id] = system;
         systemNameMap[system.name.toLowerCase()] = system;
-        
+
         // galaxy.systems[system.name.toLowerCase()] = system;
         // galaxy._sortedSystems.push(system);
-        
+
         // system.children = [];////
     }
-    
+
     console.log('Stations (EDDB)');
     for(let station of stations) {
         station = {
@@ -120,7 +131,8 @@ const {gunzipSync} = require('zlib');
             padSize: station.max_landing_pad_size,
             starDistance: station.distance_to_star,
             planetary: station.is_planetary,
-            economies: station.economies,
+            // economies: station.economies,
+            economies: [],
             services: [
                 station.has_refuel && 'Refuel',
                 station.has_repair && 'Repair',
@@ -131,62 +143,55 @@ const {gunzipSync} = require('zlib');
                 station.has_blackmarket && 'Black Market',
             ].filter(s => s),
         };
-        
+
         if(!station.type || station.type === 'Fleet Carrier') {
             continue;
         }
-        
+
         let system = galaxy.systems[station.system];
         if(!system) {
             throw new Error('Unknown system: ' + station.system + ' (' + station.name + ')');
         }
         system.stations.push(station.id);
-        
+
         galaxy.stations[station.id] = station;
-        
+
         // station._distanceModifier = station.starDistance * starDistanceFactor;
     }
-    
+
     console.log('Stations (EDSM)');
     for(let edsmStation of edsmStations) {
-        
+
         if(!edsmStation.type || edsmStation.type === 'Fleet Carrier' || edsmStation.type === 'Mega ship') {
             continue;
         }
-        
+
         let system = systemNameMap[edsmStation.systemName.toLowerCase()];
         if(!system) {
-            // throw new Error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
-            console.error('Unknown system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
+            console.error('>> Unknown star system: ' + edsmStation.systemName + ' (' + edsmStation.name + ')');
             continue;
         }
         let station = galaxy.stations[system.stations.filter(station => galaxy.stations[station].name === edsmStation.name)[0]];
         if(!station) {
             console.error('>> Unknown station:', edsmStation.name, ':', edsmStation.type);
             continue;
-            // throw new Error('Unknown station: ' + system.name + ' : ' + edsmStation.name);
         }
-        
-        // let materialType =
-        
-        // station.economies = [edsmStation.economy];
-        // if(edsmStation.secondEconomy) {
-        //     station.economies.push(edsmStation.secondEconomy);
-        // }
-        
+
+        station.economies = [edsmStation.economy];
+        if(edsmStation.secondEconomy) {
+            station.economies.push(edsmStation.secondEconomy);
+        }
+
         let edsmServices = edsmStation.otherServices;
         station.services.push(...[
             edsmServices.includes('Interstellar Factors Contact') && 'Interstellar Factors',
             edsmServices.includes('Technology Broker') && 'Technology Broker',
-            edsmServices.includes('Material Trader') && (
-                station.economies[0] === 'High Tech' ? 'Encoded'
-                    : ['Refinery', 'Extraction'].includes(station.economies[0]) ? 'Raw' : 'Manufactured' //TODO disambiguate
-            ) + ' Material Trader',
+            edsmServices.includes('Material Trader') && getMaterialTraderType(station) + ' Material Trader',
         ].filter(s => s));
     }
-    
+
     console.log('Rings');
-    for(let [systemName, bodyMap] of Object.entries(rings)) {
+    for(let [systemName, bodyMap] of Object.entries(streamData.rings)) {
         let system = systemNameMap[systemName.toLowerCase()];
         if(system) {
             for(let [bodyName, body] of Object.entries(bodyMap)) {
@@ -205,7 +210,7 @@ const {gunzipSync} = require('zlib');
             }
         }
     }
-    
+
     console.log('Export');
     let data = JSON.stringify(galaxy, function(key, value) {
         if(value && value.$resolve && !Object.values(galaxy).includes(this)) {
@@ -214,5 +219,5 @@ const {gunzipSync} = require('zlib');
         return value;
     });
     await fs.writeFile('../elite-navigator-web/public/data/galaxy.json', data);
-    
+
 })().catch(err => console.error(err) & process.exit(1));

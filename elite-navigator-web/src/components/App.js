@@ -423,19 +423,19 @@ export default function App() {
                                 </>)}/>
                             ))}
                         </>)}/>
-                        {/*<Category name="Material traders" detail={() => (*/}
-                        {/*    galaxy.materialTypes.map((type, i) => (*/}
-                        {/*        <Category key={i} name={type} detail={() => (*/}
-                        {/*            <ExpandableList*/}
-                        {/*                items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}*/}
-                        {/*                size={2}*/}
-                        {/*                // ignoreSort*/}
-                        {/*                render={(station, i) => (*/}
-                        {/*                    <Station key={i} station={station}/>*/}
-                        {/*                )}/>*/}
-                        {/*        )}/>*/}
-                        {/*    ))*/}
-                        {/*)}/>*/}
+                        <Category name="Material traders" detail={() => (
+                            galaxy.materialTypes.map((type, i) => (
+                                <Category key={i} name={type} detail={() => (
+                                    <ExpandableList
+                                        items={galaxy.getNearestStations(s => s.services.includes(type + ' Material Trader'))}
+                                        size={2}
+                                        // ignoreSort
+                                        render={(station, i) => (
+                                            <Station key={i} station={station}/>
+                                        )}/>
+                                )}/>
+                            ))
+                        )}/>
                         <Category name="Services" detail={() => (
                             ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
                                 <Category key={i} name={sentenceCase(type)} detail={() => (

@@ -18,11 +18,13 @@ function isPopulated(system) {
     return !!binarySearch(populatedSystems, system.toLowerCase(), (a, b) => a - b);
 }
 
-let ringPath = `${dataDir}/eddn_system_body_rings.json`;
-let ringMap = fs.existsSync(ringPath) ? JSON.parse(fs.readFileSync(ringPath).toString('utf8')) : {};
+let ringPath = `${dataDir}/eddn_stream.json`;
+let data = fs.existsSync(ringPath) ? JSON.parse(fs.readFileSync(ringPath).toString('utf8')) : {
+    rings: {},
+};
 
 setInterval(() => {
-    fs.writeFileSync(ringPath, JSON.stringify(ringMap));
+    fs.writeFileSync(ringPath, JSON.stringify(data));
     console.log('Exported JSON');
 }, 1000 * 60);
 
@@ -33,26 +35,26 @@ async function run() {
 
         if(entry.event === 'Scan' && entry.Rings) {
 
-        let systemName = entry.StarSystem;
-        if(!isPopulated(systemName)) {
-            return;
-        }
+            let systemName = entry.StarSystem;
+            if(!isPopulated(systemName)) {
+                return;
+            }
 
-        let bodyName = entry.BodyName.replace(systemName, '').trim();
-        let rings = entry.Rings.map(ring => ({
-            name: ring.Name.replace(entry.BodyName, '').trim(),
-            type: ring.RingClass
-                .replace('eRingClass_', '')
-                .replace('MetalRich', 'Metal Rich')
-                .replace('Metal' + 'ic', 'Metallic'),
-        }));
+            let bodyName = entry.BodyName.replace(systemName, '').trim();
+            let rings = entry.Rings.map(ring => ({
+                name: ring.Name.replace(entry.BodyName, '').trim(),
+                type: ring.RingClass
+                    .replace('eRingClass_', '')
+                    .replace('MetalRich', 'Metal Rich')
+                    .replace('Metal' + 'ic', 'Metallic'),
+            }));
 
-        console.log(systemName, bodyName, rings);
+            console.log(systemName, bodyName, rings);
 
-        (ringMap[entry.StarSystem] || (ringMap[entry.StarSystem] = {}))[bodyName] = {
-            distance: Math.round(entry.DistanceFromArrivalLS),
-            rings: rings,
-        };
+            (data.rings[entry.StarSystem] || (data.rings[entry.StarSystem] = {}))[bodyName] = {
+                distance: Math.round(entry.DistanceFromArrivalLS),
+                rings: rings,
+            };
         }
     });
 }

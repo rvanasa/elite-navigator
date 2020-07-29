@@ -7,7 +7,7 @@ export default function SettingToggle(props) {
 
     let settings = useContext(SettingsContext);
 
-    function onClick(e) {
+    function onClick() {
         let value = !settings[setting];
         settings.set({[setting]: value});
         if(onToggle) {
