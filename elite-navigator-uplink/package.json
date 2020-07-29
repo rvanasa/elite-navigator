@@ -36,6 +36,9 @@
     "artifactName": "${productName}.${ext}",
     "productName": "Elite Navigator",
     "files": [
+      "index.js",
+      "src/**/*",
+      "node_modules/**/*",
       "www/**/*",
       "icon.png"
     ],
