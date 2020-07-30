@@ -47,9 +47,9 @@ export async function tryConnect(roomName) {
         });
 
         socket.on('join', (id, role) => {
-            console.log('Joined:', id, ':', role);
+            console.log('Joined:', role, id);
 
-            events.emit('msg', {joinedAsRole: role},id);
+            events.emit('msg', {joinedAsRole: role}, id);
 
             if(role === 'uplink') {
                 sources.add(id);
@@ -69,7 +69,7 @@ export async function tryConnect(roomName) {
         });
 
         socket.on('msg', (msg, id, role) => {
-            console.log('Received:', id, msg, role);
+            console.log('Received:', role, id, msg);
 
             events.emit('msg', msg, id, role);
         });
