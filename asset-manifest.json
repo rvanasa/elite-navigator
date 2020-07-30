@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css",
-    "main.js": "https://rvanasa.github.io/elite-navigator/static/js/main.84e9b861.chunk.js",
-    "main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/main.84e9b861.chunk.js.map",
+    "main.js": "https://rvanasa.github.io/elite-navigator/static/js/main.b39e0bab.chunk.js",
+    "main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/main.b39e0bab.chunk.js.map",
     "runtime-main.js": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js",
     "runtime-main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js.map",
     "static/js/2.b427269e.chunk.js": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js",
     "static/js/2.b427269e.chunk.js.map": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js.map",
     "index.html": "https://rvanasa.github.io/elite-navigator/index.html",
-    "precache-manifest.80769a4421ecb9a6e1d4eb7b71218533.js": "https://rvanasa.github.io/elite-navigator/precache-manifest.80769a4421ecb9a6e1d4eb7b71218533.js",
+    "precache-manifest.16177e0b8dcf53e220dd7ef6526b54da.js": "https://rvanasa.github.io/elite-navigator/precache-manifest.16177e0b8dcf53e220dd7ef6526b54da.js",
     "service-worker.js": "https://rvanasa.github.io/elite-navigator/service-worker.js",
     "static/css/main.43e639a8.chunk.css.map": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css.map",
     "static/js/2.b427269e.chunk.js.LICENSE.txt": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.5ed3ceab.js",
     "static/js/2.b427269e.chunk.js",
     "static/css/main.43e639a8.chunk.css",
-    "static/js/main.84e9b861.chunk.js"
+    "static/js/main.b39e0bab.chunk.js"
   ]
 }
