@@ -22,6 +22,7 @@ class Galaxy {
         console.assert(Object.keys(data).every(k => this.hasOwnProperty(k)));
 
         this.materialTypes = ['Raw', 'Manufactured', 'Encoded'];
+        this.technologyTypes = ['Human', 'Guardian'];
         this.ringTypes = ['Rocky', 'Icy', 'Metallic', 'Metal Rich'];
 
         this.searchOptions = [];

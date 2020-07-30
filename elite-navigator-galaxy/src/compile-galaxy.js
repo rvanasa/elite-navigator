@@ -13,7 +13,16 @@ function getMaterialTraderType(station) {
     if(secondary === 'High Tech' || secondary === 'Military') return 'Encoded';
     if(secondary === 'Extraction' || secondary === 'Refinery') return 'Raw';
     if(secondary === 'Industrial') return 'Manufactured';
-    return '?';
+    return null;
+}
+
+function getTechnologyBrokerType(station) {
+    let [primary, secondary] = station.economies;
+    if(primary === 'High Tech' || secondary === 'High Tech') return 'Guardian';
+    if(primary === 'Industrial') return 'Human';
+    if(primary === 'High Tech' || secondary === 'High Tech') return 'Guardian';
+    // if(secondary && secondary !== 'High Tech') return 'Human';
+    return null;
 }
 
 (async () => {
@@ -185,8 +194,8 @@ function getMaterialTraderType(station) {
         let edsmServices = edsmStation.otherServices;
         station.services.push(...[
             edsmServices.includes('Interstellar Factors Contact') && 'Interstellar Factors',
-            edsmServices.includes('Technology Broker') && 'Technology Broker',
-            edsmServices.includes('Material Trader') && getMaterialTraderType(station) + ' Material Trader',
+            edsmServices.includes('Technology Broker') && ((getTechnologyBrokerType(station) || '') + ' Technology Broker').trim(),
+            edsmServices.includes('Material Trader') && ((getMaterialTraderType(station) || '') + ' Material Trader').trim(),
         ].filter(s => s));
     }
 

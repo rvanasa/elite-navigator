@@ -438,7 +438,7 @@ export default function App() {
                             ))
                         )}/>
                         <Category name="Services" detail={() => (
-                            ['Interstellar Factors', 'Black Market', 'Technology Broker'].map((type, i) => (
+                            ['Interstellar Factors', 'Black Market', 'Human Technology Broker', 'Guardian Technology Broker'].map((type, i) => (
                                 <Category key={i} name={sentenceCase(type)} detail={() => (
                                     <ExpandableList
                                         items={galaxy.getNearestStations(s => s.services.includes(type))}
@@ -450,8 +450,6 @@ export default function App() {
                                 )}/>
                             ))
                         )}/>
-                        {/*<br/>*/}
-                        {/*{overlayContent()}*/}
                     </div>
                 </>)}
             </Tab>
