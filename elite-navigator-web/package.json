@@ -6,7 +6,7 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "deploy": "util\\deploy.bat",
-    "deploy-static": "set PUBLIC_URL=https://rvanasa.github.io/elite-navigator&& npm run build && gh-pages -d build",
+    "deploy-static": "set PUBLIC_URL=https://www.ryanvandersmith.com/elite-navigator&& npm run build && gh-pages -d build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"
   },
@@ -44,12 +44,12 @@
     "customize-cra": "^1.0.0",
     "customize-cra-react-refresh": "^1.1.0",
     "gh-pages": "^3.1.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^6.0.1",
+    "query-string": "^6.13.1",
     "react-app-rewired": "^2.1.6",
     "react-bootstrap": "^1.2.1",
     "react-icons": "^3.10.0",
     "react-swipeable": "^5.5.1",
-    "socket.io-client": "^2.3.0",
-    "query-string": "^6.13.1"
+    "socket.io-client": "^2.3.0"
   }
 }
