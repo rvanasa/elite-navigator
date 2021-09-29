@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css",
-    "main.js": "https://rvanasa.github.io/elite-navigator/static/js/main.adcdcbe4.chunk.js",
-    "main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/main.adcdcbe4.chunk.js.map",
-    "runtime-main.js": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js",
-    "runtime-main.js.map": "https://rvanasa.github.io/elite-navigator/static/js/runtime-main.5ed3ceab.js.map",
-    "static/js/2.b427269e.chunk.js": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js",
-    "static/js/2.b427269e.chunk.js.map": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js.map",
-    "index.html": "https://rvanasa.github.io/elite-navigator/index.html",
-    "precache-manifest.f0204603e7b4c99ce470042a4824e991.js": "https://rvanasa.github.io/elite-navigator/precache-manifest.f0204603e7b4c99ce470042a4824e991.js",
-    "service-worker.js": "https://rvanasa.github.io/elite-navigator/service-worker.js",
-    "static/css/main.43e639a8.chunk.css.map": "https://rvanasa.github.io/elite-navigator/static/css/main.43e639a8.chunk.css.map",
-    "static/js/2.b427269e.chunk.js.LICENSE.txt": "https://rvanasa.github.io/elite-navigator/static/js/2.b427269e.chunk.js.LICENSE.txt"
+    "main.css": "https://www.ryanvandersmith.com/elite-navigator/static/css/main.43e639a8.chunk.css",
+    "main.js": "https://www.ryanvandersmith.com/elite-navigator/static/js/main.4e15120a.chunk.js",
+    "main.js.map": "https://www.ryanvandersmith.com/elite-navigator/static/js/main.4e15120a.chunk.js.map",
+    "runtime-main.js": "https://www.ryanvandersmith.com/elite-navigator/static/js/runtime-main.2b6b297f.js",
+    "runtime-main.js.map": "https://www.ryanvandersmith.com/elite-navigator/static/js/runtime-main.2b6b297f.js.map",
+    "static/js/2.5e797123.chunk.js": "https://www.ryanvandersmith.com/elite-navigator/static/js/2.5e797123.chunk.js",
+    "static/js/2.5e797123.chunk.js.map": "https://www.ryanvandersmith.com/elite-navigator/static/js/2.5e797123.chunk.js.map",
+    "index.html": "https://www.ryanvandersmith.com/elite-navigator/index.html",
+    "precache-manifest.50e96b228d09cebf393433506b3e7c15.js": "https://www.ryanvandersmith.com/elite-navigator/precache-manifest.50e96b228d09cebf393433506b3e7c15.js",
+    "service-worker.js": "https://www.ryanvandersmith.com/elite-navigator/service-worker.js",
+    "static/css/main.43e639a8.chunk.css.map": "https://www.ryanvandersmith.com/elite-navigator/static/css/main.43e639a8.chunk.css.map",
+    "static/js/2.5e797123.chunk.js.LICENSE.txt": "https://www.ryanvandersmith.com/elite-navigator/static/js/2.5e797123.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.5ed3ceab.js",
-    "static/js/2.b427269e.chunk.js",
+    "static/js/runtime-main.2b6b297f.js",
+    "static/js/2.5e797123.chunk.js",
     "static/css/main.43e639a8.chunk.css",
-    "static/js/main.adcdcbe4.chunk.js"
+    "static/js/main.4e15120a.chunk.js"
   ]
 }
